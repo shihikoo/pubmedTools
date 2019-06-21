@@ -1,9 +1,4 @@
-# library(httr)
-# library(XML)
-# library(foreach)
-# library(doParallel)
-# library(parallel)
-# library(rjson)
+library(rjson)
 
 apiKey <- rjson::fromJSON(file = "configure.json")$APIKey
 email <- "shihikoo@gmail.com"

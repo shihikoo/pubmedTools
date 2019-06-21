@@ -23,7 +23,7 @@ RetriveMetaDataFromPmids
  pmids <- c("28852052", "29041955")
 apiKey <- ""
 email <- ""
-metaData <-  RetriveMetaDataFromPmids(pmids, apiKey,email)
+metaData <-  RetriveMetaDataFromPmids(pmids, apiKey, email)
 print(metaData)
 
 }

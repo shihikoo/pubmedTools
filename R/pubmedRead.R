@@ -1,9 +1,17 @@
 # ----- Functions ----------
-RemoveNewline <- function(text){
-  print("-- Start to remove \r \n \f \t")
-  text <- gsub("\r|\n|\f|\t", " ", text)
-}
 
+#' GetBaselink
+#'
+#' @param db a string of characters, valid database name from NCBI: https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.chapter2_table1
+#' @param id a string of characters, valid id matching the database
+#' @param apiKey a string of characters, API Key of the user
+#' @param email a string of characters, email address of the user
+#'
+#' @return a list of links
+#' @export
+#'
+#' @examples links <- GetBaselink("pubmed", "4804230", "","")
+#'
 GetBaselink <- function(db,id, apiKey = "", email = ""){
   baseUrl <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   links <- data.frame(
@@ -18,6 +26,15 @@ GetBaselink <- function(db,id, apiKey = "", email = ""){
   return(links)
 }
 
+#' GetContentWithLink
+#'
+#' @param link a string of characters
+#'
+#' @return a string of characters of the returned content
+#' @export
+#'
+#' @examples content <- GetContentWithLink("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
+#'
 GetContentWithLink <- function(link){
   tryCatch({
     r0 <- GET(as.character(link))
@@ -28,6 +45,15 @@ GetContentWithLink <- function(link){
   })
 }
 
+#' RetriveXmlNodeValuefromContent
+#'
+#' @param content a string of characters, content received from GET request
+#' @param nodePosition a string of characters, valid nodePosition of the XML
+#'
+#' @return the values of the request node
+#' @export
+#'
+#' @examples
 RetriveXmlNodeValuefromContent <-function(content, nodePosition){
   doc <- xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
   node <- xpathApply(doc, nodePosition )
@@ -36,6 +62,15 @@ RetriveXmlNodeValuefromContent <-function(content, nodePosition){
   return(result)
 }
 
+#' RetriveXmlNodeValuefromDoc
+#'
+#' @param doc the parsed XML file
+#' @param nodePosition the node position of the xml file
+#'
+#' @return the values of the node
+#' @export
+#'
+#' @examples
 RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
   node <- xpathApply(doc, nodePosition )
   if(length(node) == 0) return(NULL)
@@ -53,11 +88,7 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #' @return a string: pmid
 #' @export
 #'
-#' @examples pmcid <- "28852052"
-#' apiKey <- ""
-#' email <- ""
-#' pmid <-  GetPmidDoiFromPmcid(pmcid, apiKey, email)
-#' print(pmid)
+#' @examples pmid <- GetPmidDoiFromPmcid("28852052", "",  "")
 #'
 GetPmidDoiFromPmcid <- function(pmcid, apiKey, email){
   GetPmidContentFromPmcid <- function(pmcid, apiKey, email){
