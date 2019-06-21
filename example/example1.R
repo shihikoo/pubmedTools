@@ -4,9 +4,8 @@ library(foreach)
 library(doParallel)
 library(rjson)
 
-# library(githubinstall)
-# install_github("shihikoo/pubmedTools")
-# githubinstall("pubmedTools")
+# library(devtools)
+install_github("shihikoo/pubmedTools")
 # library(pubmedTools)
 source('R/pubmedRead.R')
 
