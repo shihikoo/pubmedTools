@@ -1,3 +1,4 @@
 packrat/lib*/
 .Rproj.user
 configure.json
+inst/doc

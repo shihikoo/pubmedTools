@@ -24,9 +24,6 @@ Get related full text urls from given pmid
 }
 \examples{
  pmid <- "28852052"
-apiKey <- ""
-email <- ""
-url <-  GetUrlsFromPmid(pmid, apiKey, email)
-print(url)
+url <-  GetUrlsFromPmid(pmid, "", "")
 
 }

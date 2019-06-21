@@ -16,6 +16,9 @@ a string of characters of the returned content
 GetContentWithLink
 }
 \examples{
-content <- GetContentWithLink("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
+baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
+content <- GetContentWithLink(link)
+
 
 }

@@ -20,10 +20,6 @@ a string: pmid
 GetPmidDoiFromPmcid
 }
 \examples{
-pmcid <- "28852052"
-apiKey <- ""
-email <- ""
-pmid <-  GetPmidDoiFromPmcid(pmcid, apiKey, email)
-print(pmid)
+pmid <- GetPmidDoiFromPmcid("28852052", "",  "")
 
 }
