@@ -12,8 +12,8 @@ GetBaselink <- function(db,id, apiKey = "", email = ""){
     EsummaryLink = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",id),
     stringsAsFactors = F
   )
-  if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=",apiKey))
-  if(email != "") links <- sapply(links, function(x)  paste0(x, "&email=",email))
+  if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=", apiKey))
+  if(email != "") links <- sapply(links, function(x)  paste0(x, "&email=", email))
 
   return(links)
 }
@@ -94,14 +94,14 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey, email){
 #' metaData <-  GetMetaDataFromPmid(pmid, apiKey, email)
 #' print(metaData)
 #'
-GetMetaDataFromPmid <- function(pmid, apiKey,email){
-  GetEfetchContentFromPmid <- function(pmid, apiKey,email){
-    links <- GetBaselink("pubmed", pmid, apiKey,email)
+GetMetaDataFromPmid <- function(pmid, apiKey, email){
+  GetEfetchContentFromPmid <- function(pmid, apiKey, email){
+    links <- GetBaselink("pubmed", pmid, apiKey, email)
     content <- GetContentWithLink(links["EfetcLink"])
     return(content)
   }
 
-  content <- GetEfetchContentFromPmid(pmid, apiKey,email)
+  content <- GetEfetchContentFromPmid(pmid, apiKey, email)
   if(is.null(content)) {return (NULL)}
 
   doc <- xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
@@ -144,10 +144,10 @@ GetMetaDataFromPmid <- function(pmid, apiKey,email){
 #' @examples  pmids <- c("28852052", "29041955")
 #' apiKey <- ""
 #' email <- ""
-#' metaData <-  RetriveMetaDataFromPmids(pmids, apiKey,email)
+#' metaData <-  RetriveMetaDataFromPmids(pmids, apiKey, email)
 #' print(metaData)
 #'
-RetriveMetaDataFromPmids <- function(pmids, apiKey,email){
+RetriveMetaDataFromPmids <- function(pmids, apiKey, email){
   metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email)
   return(as.data.frame(t(metaDataFromPMIDs)))
 }
@@ -169,12 +169,12 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey,email){
 #' @examples  pmid <- "28852052"
 #' apiKey <- ""
 #' email <- ""
-#' url <-  GetUrlsFromPmid(pmid, apiKey,email)
+#' url <-  GetUrlsFromPmid(pmid, apiKey, email)
 #' print(url)
 #'
-GetUrlsFromPmid <- function(pmid, apiKey,email, fulltext = T){
-  GetUrlsContentWithPmid <- function(pmid, apiKey,email){
-    links <- GetBaselink("pubmed", pmid, apiKey,email)
+GetUrlsFromPmid <- function(pmid, apiKey, email, fulltext = T){
+  GetUrlsContentWithPmid <- function(pmid, apiKey, email){
+    links <- GetBaselink("pubmed", pmid, apiKey, email)
     content <- GetContentWithLink(links["ELinkURLsLink"])
     return(content)
   }
@@ -185,7 +185,7 @@ GetUrlsFromPmid <- function(pmid, apiKey,email, fulltext = T){
     {
       url <- xmlValue(node[["Url"]])
       category <- xmlValue(node[["Category"]])
-      return(as.data.frame(cbind(url, category),stringsAsFactors = F, col.names = c("Url", "Category")))
+      return(as.data.frame(cbind(url, category), stringsAsFactors = F, col.names = c("Url", "Category")))
     }))
     if(category == "All") return(myData)
 
@@ -194,7 +194,7 @@ GetUrlsFromPmid <- function(pmid, apiKey,email, fulltext = T){
     return(myData)
   }
 
-  content <- GetUrlsContentWithPmid(pmid, apiKey,email)
+  content <- GetUrlsContentWithPmid(pmid, apiKey, email)
   if(is.null(content)) {return (NULL)}
 
   if(fulltext == T) category <- "Full Text Sources" else category = "All"
