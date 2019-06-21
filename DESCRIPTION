@@ -6,8 +6,8 @@ Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: Creative Commons license
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Import: httr, XML,foreach,doParallel,rjson
+Import: httr, XML,foreach,doParallel,rjson,parallel
 RoxygenNote: 6.1.1

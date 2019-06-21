@@ -2,6 +2,7 @@ library(httr)
 library(XML)
 library(foreach)
 library(doParallel)
+library(parallel)
 library(rjson)
 
 # library(devtools)

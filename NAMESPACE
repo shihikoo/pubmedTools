@@ -2,4 +2,3 @@
 
 export(GetUrlsFromPmid)
 export(RetriveUrlsFromPmids)
-export(RetriveUrlsFromPmidsParallel)

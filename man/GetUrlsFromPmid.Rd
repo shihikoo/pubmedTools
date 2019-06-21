@@ -9,7 +9,9 @@ GetUrlsFromPmid(pmid, apiKey, fulltext = T)
 \arguments{
 \item{pmid}{a number or a string of characters. The number of pmid.}
 
-\item{fulltext}{a boolean}
+\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
+
+\item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
 \value{
 a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
@@ -21,7 +23,7 @@ Get related full text urls from given pmid
 \examples{
  pmid <- "28852052"
 apiKey <- ""
-url <-  GetUrlsFromPubMed(pmid, apiKey)
+url <-  GetUrlsFromPmid(pmid, apiKey)
 print(url)
 
 }

@@ -108,7 +108,8 @@ RetriveInfoFromPmids <- function(pmids, apiKey){
 #' Get related full text urls from given pmid
 #'
 #' @param pmid a number or a string of characters. The number of pmid.
-#' @param fulltext a boolean
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
 #' Return NULL if none is found.
@@ -117,7 +118,7 @@ RetriveInfoFromPmids <- function(pmids, apiKey){
 #'
 #' @examples  pmid <- "28852052"
 #' apiKey <- ""
-#' url <-  GetUrlsFromPubMed(pmid, apiKey)
+#' url <-  GetUrlsFromPmid(pmid, apiKey)
 #' print(url)
 #'
 GetUrlsFromPmid <- function(pmid, apiKey, fulltext = T){
@@ -158,7 +159,8 @@ GetUrlsFromPmid <- function(pmid, apiKey, fulltext = T){
 #' Retrive urls from pmids
 #'
 #' @param pmids a list of numbers or characters. The number of pmid.
-#' @param fulltext a boolean
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
 #' Return NULL if none is found.
@@ -174,29 +176,3 @@ RetriveUrlsFromPmids <- function(pmids, apiKey, fulltext = T){
   return(urlFromPMIDs)
 }
 
-#' RetriveUrlsFromPmidsParallel
-#'
-#' Retrive urls from pmids
-#'
-#' @param pmids a list of numbers or characters. The number of pmid.
-#' @param fulltext a boolean
-#'
-#' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
-#' Return NULL if none is found.
-#' @export
-#'
-#' @examples pmids <- c("28852052", "29041955")
-#' apiKey <- ""
-#' urls <-  RetriveUrlsFromPmidsParallel(pmids, apiKey)
-#' print(urls)
-#'
-RetriveUrlsFromPmidsParallel <- function(pmids, apiKey, fulltext = T){
-  ncores <- detectCores(all.tests = FALSE, logical = TRUE)
-  cl <- makeCluster(round(ncores), outfile="") #determines how many parallel processes are used for the pdf downloading
-  registerDoParallel(cl)
-
-  urlFromPMIDs <- foreach(i=1:length(pmids), .packages=c('GetUrlsFromPmid')) %dopar% {
-    GetUrlsFromPmid(PMIDs[i], fulltext = fulltext)
-  }
-  return(urlFromPMIDs)
-}
