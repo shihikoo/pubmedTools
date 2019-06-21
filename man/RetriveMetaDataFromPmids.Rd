@@ -13,6 +13,17 @@ RetriveMetaDataFromPmids(pmids, apiKey, email)
 
 \item{email}{a string of characters. Your email address}
 }
+\value{
+a list of metaDatarmation retrived from PubMed
+}
 \description{
 RetriveMetaDataFromPmids
+}
+\examples{
+ pmids <- c("28852052", "29041955")
+apiKey <- ""
+email <- ""
+metaData <-  RetriveMetaDataFromPmids(pmids, apiKey,email)
+print(metaData)
+
 }

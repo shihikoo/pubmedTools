@@ -138,12 +138,12 @@ GetMetaDataFromPmid <- function(pmid, apiKey,email){
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
 #'
-#' @returna a list of metaDatarmation retrived from PubMed
+#' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
 #' @examples  pmids <- c("28852052", "29041955")
 #' apiKey <- ""
-#' email <- "
+#' email <- ""
 #' metaData <-  RetriveMetaDataFromPmids(pmids, apiKey,email)
 #' print(metaData)
 #'
