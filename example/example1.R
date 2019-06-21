@@ -18,6 +18,8 @@ pmid <- pmids[1]
 pmcid <- "4804230"
 email <- "shihikoo@gmail.com"
 
+print(GetPmidDoiFromPmcid(pmcid), apiKey,email)
+
 urls <-  pubmedTools::RetriveUrlsFromPmids(pmids, apiKey,email)
 print(urls)
 

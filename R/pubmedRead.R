@@ -43,6 +43,22 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
   return(result)
 }
 
+
+#' GetPmidDoiFromPmcid
+#'
+#' @param pmcid a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#'
+#' @return a string: pmid
+#' @export
+#'
+#' @examples pmcid <- "28852052"
+#' apiKey <- ""
+#' email <- ""
+#' pmid <-  GetPmidDoiFromPmcid(pmcid, apiKey, email)
+#' print(pmid)
+#'
 GetPmidDoiFromPmcid <- function(pmcid, apiKey, email){
   GetPmidContentFromPmcid <- function(pmcid, apiKey, email){
     links <- GetBaselink("pmc", pmcid,apiKey, email)
@@ -132,7 +148,7 @@ GetMetaDataFromPmid <- function(pmid, apiKey,email){
 #' print(metaData)
 #'
 RetriveMetaDataFromPmids <- function(pmids, apiKey,email){
-  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey)
+  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email)
   return(as.data.frame(t(metaDataFromPMIDs)))
 }
 

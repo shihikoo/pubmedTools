@@ -4,7 +4,7 @@ Title: Tools for retriving information from PubMed database
 Version: 0.1.0
 Author: shihikoo
 Maintainer: shihikoo <shihikoo@gmail.com>
-Description: Tools for retriving information from PubMed using NCBI public API
+Description: Tools for retriving information from PubMed using NCBI public API.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
