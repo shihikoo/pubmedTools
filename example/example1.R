@@ -14,6 +14,8 @@ email <- "shihikoo@gmail.com"
 
 options("download.file.method" = "libcurl")
 devtools::install_github("shihikoo/pubmedTools")
+library(pubmedTools)
+
 print(pubmedTools::GetPmidDoiFromPmcid(pmcid, apiKey, email))
 print(pubmedTools::RetriveUrlsFromPmids(pmids, apiKey, email))
 print(pubmedTools::RetriveMetaDataFromPmids(pmids, apiKey, email))

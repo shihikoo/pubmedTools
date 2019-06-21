@@ -37,8 +37,8 @@ GetBaselink <- function(db,id, apiKey = "", email = ""){
 #'
 GetContentWithLink <- function(link){
   tryCatch({
-    r0 <- GET(as.character(link))
-    content <- content(r0, "text")
+    r0 <- httr::GET(as.character(link))
+    content <- Httr::content(r0, "text")
     return(content)
   }, error=function(e){
     return(NULL)
@@ -55,8 +55,8 @@ GetContentWithLink <- function(link){
 #'
 #' @examples
 RetriveXmlNodeValuefromContent <-function(content, nodePosition){
-  doc <- xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-  node <- xpathApply(doc, nodePosition )
+  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
+  node <- xXML::pathApply(doc, nodePosition )
   result <- xmlValue(node[[1]])
   if(is.na(node)) return(NULL)
   return(result)
