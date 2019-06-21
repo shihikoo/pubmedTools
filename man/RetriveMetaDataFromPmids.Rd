@@ -4,20 +4,15 @@
 \alias{RetriveMetaDataFromPmids}
 \title{RetriveMetaDataFromPmids}
 \usage{
-RetriveMetaDataFromPmids(pmids, apiKey)
+RetriveMetaDataFromPmids(pmids, apiKey, email)
 }
 \arguments{
 \item{pmids}{a string of character. PubMed Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
+
+\item{email}{a string of characters. Your email address}
 }
 \description{
 RetriveMetaDataFromPmids
-}
-\examples{
- pmids <- c("28852052", "29041955")
-apiKey <- ""
-metaData <-  RetriveMetaDataFromPmids(pmids, apiKey)
-print(metaData)
-
 }
