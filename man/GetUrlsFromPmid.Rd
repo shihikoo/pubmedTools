@@ -4,7 +4,7 @@
 \alias{GetUrlsFromPmid}
 \title{GetUrlsFromPmid}
 \usage{
-GetUrlsFromPmid(pmid, fulltext = T)
+GetUrlsFromPmid(pmid, apiKey, fulltext = T)
 }
 \arguments{
 \item{pmid}{a number or a string of characters. The number of pmid.}
@@ -20,6 +20,8 @@ Get related full text urls from given pmid
 }
 \examples{
  pmid <- "28852052"
-urls <-  GetUrlsFromPubMed(pmid)
-print(urls)
+apiKey <- ""
+url <-  GetUrlsFromPubMed(pmid, apiKey)
+print(url)
+
 }

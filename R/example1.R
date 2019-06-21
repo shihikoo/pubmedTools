@@ -3,9 +3,10 @@ library(XML)
 library(foreach)
 library(doParallel)
 library(rjson)
-# install.packages("devtools")
-# library(devtools)
+
+# library(githubinstall)
 # install_github("shihikoo/pubmedTools")
+# githubinstall("pubmedTools")
 # library(pubmedTools)
 source('R/pubmedRead.R')
 
