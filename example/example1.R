@@ -1,25 +1,21 @@
-library(httr)
-library(XML)
-library(foreach)
-library(doParallel)
-library(parallel)
-library(rjson)
-
-# library(devtools)
-install_github("shihikoo/pubmedTools")
-# library(pubmedTools)
-source('R/pubmedRead.R')
+# library(httr)
+# library(XML)
+# library(foreach)
+# library(doParallel)
+# library(parallel)
+# library(rjson)
+# source('R/pubmedRead.R')
+options("download.file.method" = "libcurl")
+devtools::install_github("shihikoo/pubmedTools")
 
 result <- fromJSON(file = "configure.json")
 apiKey <- result$APIKey
-print(apiKey)
-
-pmids <- c("11748933", "29041955")
+pmids <- c("28852052", "29041955")
 pmid <- pmids[1]
 pmcid <- "4804230"
 
-urls <-  RetriveUrlsFromPmids(pmids, apiKey)
+urls <-  pubmedTools::RetriveUrlsFromPmids(pmids, apiKey)
 print(urls)
 
-info <-  RetriveInfoFromPmids(pmids, apiKey)
-print(info)
+metaData <-  pubmedTools::RetriveMetaDataFromPmids(pmids, apiKey)
+print(metaData)

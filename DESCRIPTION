@@ -1,11 +1,10 @@
 Package: pubmedTools
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools for retriving information from PubMed database
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: shihikoo
+Maintainer: shihikoo <shihikoo@gmail.com>
+Description: Tools for retriving information from PubMed using NCBI public API
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

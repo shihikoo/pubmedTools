@@ -14,7 +14,7 @@ GetBaselink <- function(db,id, apiKey = ""){
   )
   if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=",apiKey))
 
-return(links)
+  return(links)
 }
 
 GetContentWithLink <- function(link){
@@ -62,7 +62,20 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey){
   return(data.frame(pmid=pmid,doi=doi))
 }
 
-GetInfoFromPmid <- function(pmid, apiKey){
+#' GetMetaDataFromPmid
+#'
+#' @param pmid a string of character. PubMed Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#'
+#' @return a list of metaDatarmation retrived from PubMed
+#' @export
+#'
+#' @examples pmid <- "28852052"
+#' apiKey <- ""
+#' metaData <-  GetMetaDataFromPmid(pmid, apiKey)
+#' print(metaData)
+#'
+GetMetaDataFromPmid <- function(pmid, apiKey){
   GetEfetchContentFromPmid <- function(pmid, apiKey){
     links <- GetBaselink("pubmed", pmid, apiKey)
     content <- GetContentWithLink(links["EfetcLink"])
@@ -98,9 +111,24 @@ GetInfoFromPmid <- function(pmid, apiKey){
   return(myData)
 }
 
-RetriveInfoFromPmids <- function(pmids, apiKey){
-  infoFromPMIDs <- sapply(pmids, GetInfoFromPmid, apiKey = apiKey)
-  return(infoFromPMIDs)
+
+
+#' RetriveMetaDataFromPmids
+#'
+#' @param pmids a string of character. PubMed Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#'
+#' @returna a list of metaDatarmation retrived from PubMed
+#' @export
+#'
+#' @examples  pmids <- c("28852052", "29041955")
+#' apiKey <- ""
+#' metaData <-  RetriveMetaDataFromPmids(pmids, apiKey)
+#' print(metaData)
+#'
+RetriveMetaDataFromPmids <- function(pmids, apiKey){
+  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey)
+  return(as.data.frame(t(metaDataFromPMIDs)))
 }
 
 #' GetUrlsFromPmid
