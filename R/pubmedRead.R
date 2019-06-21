@@ -42,7 +42,7 @@ GetBaselink <- function(db,id, apiKey = "", email = ""){
 #'
 GetContentWithLink <- function(link){
   tryCatch({
-    if(grep("api_key",link)) Sys.sleep(0.05)
+    if(grep("api_key",link)) Sys.sleep(0.1)
     else Sys.sleep(0.3)
     r0 <- httr::GET(as.character(link))
     content <- httr::content(r0, "text")
