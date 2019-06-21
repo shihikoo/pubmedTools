@@ -12,8 +12,7 @@ GetBaselink <- function(db,id, apiKey = ""){
 return(links)
 }
 
-GetContentWithLink <- function(link)
-{
+GetContentWithLink <- function(link){
   tryCatch({
     r0 <- GET(as.character(link))
     content <- content(r0, "text")
@@ -38,8 +37,7 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
   return(result)
 }
 
-GetPmidDoiFromPmcid <- function(pmcid, apiKey)
-{
+GetPmidDoiFromPmcid <- function(pmcid, apiKey){
   GetPmidContentFromPmcid <- function(pmcid, apiKey){
     links <- GetBaselink("pmc", pmcid,apiKey)
     content <- GetContentWithLink(links["EsummaryLink"])
@@ -59,8 +57,7 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey)
   return(data.frame(pmid=pmid,doi=doi))
 }
 
-GetInfoFromPmid <- function(pmid, apiKey)
-{
+GetInfoFromPmid <- function(pmid, apiKey){
   GetEfetchContentFromPmid <- function(pmid, apiKey){
     links <- GetBaselink("pubmed", pmid, apiKey)
     content <- GetContentWithLink(links["EfetcLink"])
@@ -89,10 +86,16 @@ GetInfoFromPmid <- function(pmid, apiKey)
     journalCountry = journalCountry,
     publicationYear = publicationYear,
     authors = authors,
-    affiliation = affiliation
+    affiliation = affiliation,
+    stringsAsFactors = F
   )
 
   return(myData)
+}
+
+RetriveInfoFromPmids <- function(pmids, apiKey){
+  infoFromPMIDs <- sapply(pmids, GetInfoFromPmid, apiKey = apiKey)
+  return(infoFromPMIDs)
 }
 
 #' GetUrlsFromPmid
@@ -112,8 +115,7 @@ GetInfoFromPmid <- function(pmid, apiKey)
 #' url <-  GetUrlsFromPubMed(pmid, apiKey)
 #' print(url)
 #'
-GetUrlsFromPmid <- function(pmid, apiKey, fulltext = T)
-{
+GetUrlsFromPmid <- function(pmid, apiKey, fulltext = T){
   GetUrlsContentWithPmid <- function(pmid, apiKey){
     links <- GetBaselink("pubmed", pmid, apiKey)
     content <- GetContentWithLink(links["ELinkURLsLink"])
@@ -162,11 +164,9 @@ GetUrlsFromPmid <- function(pmid, apiKey, fulltext = T)
 #' urls <-  RetriveUrlsFromPmids(pmids, apiKey)
 #' print(urls)
 #'
-RetriveUrlsFromPmids <- function(pmids, apiKey, fulltext = T)
-  {
-  UrlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, fulltext = fulltext, apiKey = apiKey)
-
-  return(UrlFromPMIDs)
+RetriveUrlsFromPmids <- function(pmids, apiKey, fulltext = T){
+  urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, fulltext = fulltext, apiKey = apiKey)
+  return(urlFromPMIDs)
 }
 
 #' RetriveUrlsFromPmidsParallel
@@ -185,14 +185,13 @@ RetriveUrlsFromPmids <- function(pmids, apiKey, fulltext = T)
 #' urls <-  RetriveUrlsFromPmidsParallel(pmids, apiKey)
 #' print(urls)
 #'
-RetriveUrlsFromPmidsParallel <- function(pmids, apiKey, fulltext = T)
-  {
+RetriveUrlsFromPmidsParallel <- function(pmids, apiKey, fulltext = T){
   ncores <- detectCores(all.tests = FALSE, logical = TRUE)
   cl <- makeCluster(round(ncores), outfile="") #determines how many parallel processes are used for the pdf downloading
   registerDoParallel(cl)
 
-  UrlFromPMIDs <- foreach(i=1:length(pmids), .packages=c('GetUrlsFromPmid')) %dopar% {
+  urlFromPMIDs <- foreach(i=1:length(pmids), .packages=c('GetUrlsFromPmid')) %dopar% {
     GetUrlsFromPmid(PMIDs[i], fulltext = fulltext)
   }
-  return(UrlFromPMIDs)
+  return(urlFromPMIDs)
 }
