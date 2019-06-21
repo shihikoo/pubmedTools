@@ -1,4 +1,9 @@
 # ----- Functions ----------
+RemoveNewline <- function(text){
+  print("-- Start to remove \r \n \f \t")
+  text <- gsub("\r|\n|\f|\t", " ", text)
+}
+
 GetBaselink <- function(db,id, apiKey = ""){
   baseUrl <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   links <- data.frame(
