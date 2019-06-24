@@ -3,7 +3,7 @@
 #' GetBaselink
 #'
 #' @param db a string of characters, valid database name from NCBI: https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.chapter2_table1
-#' @param id a string of characters, valid id matching the database
+#' @param ids a string of characters, valid id matching the database
 #' @param apiKey a string of characters, API Key of the user
 #' @param email a string of characters, email address of the user
 #'
@@ -12,12 +12,13 @@
 #'
 #' @examples links <- GetBaselink("pubmed", "4804230", "","")
 #'
-GetBaselink <- function(db,id, apiKey = "", email = ""){
+GetBaselink <- function(db,ids, apiKey = "", email = ""){
+  idsStr <- paste0(ids,collapse = ",")
   baseUrl <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   links <- data.frame(
-    ELinkURLsLink = paste0(baseUrl, "elink.fcgi?dbfrom=",db,"&cmd=llinks&id=",id),
-    EfetcLink = paste0(baseUrl, "efetch.fcgi?db=",db,"&id=",id,"&retmode=xml"),
-    EsummaryLink = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",id),
+    ELinkURLsLink = paste0(baseUrl, "elink.fcgi?dbfrom=",db,"&cmd=llinks&id=",idsStr),
+    EfetcLink = paste0(baseUrl, "efetch.fcgi?db=",db,"&id=",idsStr,"&retmode=xml"),
+    EsummaryLink = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",idsStr),
     stringsAsFactors = F
   )
   if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=", apiKey))
@@ -62,16 +63,15 @@ GetContentWithLink <- function(link, waitTime){
 #' @import XML
 #'
 RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
-  node <- xpathApply(doc, nodePosition )
-  if(length(node) == 0) return(NULL)
-  result <- XML::xmlValue(node[[1]])
-  return(result)
+  nodes <- xpathApply(doc, nodePosition )
+  if(length(nodes) == 0) return(NULL)
+  results <- sapply(nodes, XML::xmlValue)
+  return(results)
 }
-
 
 #' GetPmidDoiFromPmcid
 #'
-#' @param pmcid a string of character. PubMed central Id
+#' @param pmcids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
 #' @param waitTime a number. Waiting of the program
@@ -83,24 +83,54 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
-  GetPmidContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
-    links <- GetBaselink("pmc", pmcid,apiKey, email)
+GetPmidDoiFromPmcid <- function(pmcids, apiKey, email, waitTime){
+  GetPmidContentFromPmcid <- function(pmcids, apiKey, email, waitTime){
+    links <- GetBaselink("pmc", pmcids, apiKey, email)
     content <- GetContentWithLink(links["EsummaryLink"], waitTime)
     return(content)
   }
 
-  content <- GetPmidContentFromPmcid(pmcid, apiKey, email, waitTime)
+  content <- GetPmidContentFromPmcid(pmcids, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
-  pmid <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='pmid']")
-  if(is.null(pmid)) return(NULL)
+  pmids <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='pmid']")
+  if(is.null(pmids)) return(NULL)
 
-  doi <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='doi']")
-  if(is.null(doi)) return(NULL)
+  dois <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='doi']")
+  if(is.null(dois)) return(NULL)
 
-  return(data.frame(pmid=pmid,doi=doi))
+  return(data.frame(pmid=pmids,doi=dois))
+}
+
+#' GetPmidDoiFromPmcidBatch
+#'
+#' @param pmcids a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#'
+#' @return a nx3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples pmid <- GetPmidDoiFromPmcidBatch(c("5575286", "4804230"), "",  "", 0)
+#'
+#' @import XML
+#'
+GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey, email, waitTime){
+  nids <- length(pmcids)
+  grid <- 500
+  nloop <- ceiling(nids/grid)
+  results <- as.data.frame(matrix(nrow = nids, ncol = 3))
+  colnames(results) <- c("pmcid", "pmid", "doi")
+  for(iloop in 1:nloop){
+    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    print(min(iindex))
+    print(max(iindex))
+    results[iindex,1] <- pmcids[iindex]
+    results[iindex,2:3] <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
+  }
+  return(results)
 }
 
 #' GetMetaDataFromPmid

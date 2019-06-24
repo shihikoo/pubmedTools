@@ -4,12 +4,12 @@
 \alias{GetBaselink}
 \title{GetBaselink}
 \usage{
-GetBaselink(db, id, apiKey = "", email = "")
+GetBaselink(db, ids, apiKey = "", email = "")
 }
 \arguments{
 \item{db}{a string of characters, valid database name from NCBI: https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.chapter2_table1}
 
-\item{id}{a string of characters, valid id matching the database}
+\item{ids}{a string of characters, valid id matching the database}
 
 \item{apiKey}{a string of characters, API Key of the user}
 
