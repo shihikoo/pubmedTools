@@ -96,10 +96,11 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
   pmids <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='pmid']")
   if(is.null(pmids)) return(NULL)
 
-  dois <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='doi']")
-  if(is.null(dois)) return(NULL)
+  # dois <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='doi']")
+  # if(is.null(dois)) return(NULL)
+  # temp <- data.frame(pmid=pmids,doi=dois)
 
-  return(data.frame(pmid=pmids,doi=dois))
+  return( data.frame(pmid=pmids))
 }
 
 #' GetPmidDoiFromPmcidBatch
@@ -121,7 +122,9 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey, email, waitTime){
   grid <- 500
   nloop <- ceiling(nids/grid)
   results <- as.data.frame(matrix(nrow = nids, ncol = 3))
-  colnames(results) <- c("pmcid", "pmid", "doi")
+  # colnames(results) <- c("pmcid", "pmid", "doi")
+  colnames(results) <- c("pmcid", "pmid")
+
   temp <- NULL
   for(iloop in 1:nloop){
     iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
