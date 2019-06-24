@@ -71,7 +71,7 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 
 #' GetPmidDoiFromPmcid
 #'
-#' @param pmcids a string of character. PubMed central Id
+#' @param pmcid a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
 #' @param waitTime a number. Waiting of the program
@@ -83,14 +83,13 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcids, apiKey, email, waitTime){
-  GetPmidContentFromPmcid <- function(pmcids, apiKey, email, waitTime){
-    links <- GetBaselink("pmc", pmcids, apiKey, email)
+GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
+  GetPmidContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
+    links <- GetBaselink("pmc", pmcid, apiKey, email)
     content <- GetContentWithLink(links["EsummaryLink"], waitTime)
     return(content)
   }
-
-  content <- GetPmidContentFromPmcid(pmcids, apiKey, email, waitTime)
+  content <- GetPmidContentFromPmcid(pmcid, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
@@ -123,12 +122,12 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey, email, waitTime){
   nloop <- ceiling(nids/grid)
   results <- as.data.frame(matrix(nrow = nids, ncol = 3))
   colnames(results) <- c("pmcid", "pmid", "doi")
+  temp <- NULL
   for(iloop in 1:nloop){
     iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
-    print(min(iindex))
-    print(max(iindex))
     results[iindex,1] <- pmcids[iindex]
-    results[iindex,2:3] <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
+    while(is.null(temp)){temp <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)}
+    results[iindex,2:3] <- temp
   }
   return(results)
 }

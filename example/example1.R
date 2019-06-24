@@ -17,7 +17,8 @@ options("download.file.method" = "libcurl")
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
 
-print(pubmedTools::GetPmidDoiFromPmcid(pmcid, apiKey, email))
-print(pubmedTools::RetriveUrlsFromPmids(pmids, apiKey, email, 0, fulltext = T))
-print(pubmedTools::RetriveMetaDataFromPmids(pmids, apiKey, email))
+print(GetPmidDoiFromPmcid(pmcid, apiKey, email))
+print(GetPmidDoiFromPmcidBatch(pmcids, apiKey, email))
+print(RetriveUrlsFromPmids(pmids, apiKey, email, 0, fulltext = T))
+print(RetriveMetaDataFromPmids(pmids, apiKey, email))
 

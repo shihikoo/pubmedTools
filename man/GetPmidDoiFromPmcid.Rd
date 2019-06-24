@@ -4,10 +4,10 @@
 \alias{GetPmidDoiFromPmcid}
 \title{GetPmidDoiFromPmcid}
 \usage{
-GetPmidDoiFromPmcid(pmcids, apiKey, email, waitTime)
+GetPmidDoiFromPmcid(pmcid, apiKey, email, waitTime)
 }
 \arguments{
-\item{pmcids}{a string of character. PubMed central Id}
+\item{pmcid}{a string of character. PubMed central Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
