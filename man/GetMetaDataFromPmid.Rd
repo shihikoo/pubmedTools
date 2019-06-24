@@ -4,7 +4,7 @@
 \alias{GetMetaDataFromPmid}
 \title{GetMetaDataFromPmid}
 \usage{
-GetMetaDataFromPmid(pmid, apiKey, email)
+GetMetaDataFromPmid(pmid, apiKey = "", email = "", waitTime = 0.3)
 }
 \arguments{
 \item{pmid}{a string of character. PubMed Id}
@@ -12,6 +12,8 @@ GetMetaDataFromPmid(pmid, apiKey, email)
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{email}{a string of characters. Your email address}
+
+\item{waitTime}{a number. Waiting of the program}
 }
 \value{
 a list of metaDatarmation retrived from PubMed
@@ -21,9 +23,7 @@ GetMetaDataFromPmid
 }
 \examples{
 pmid <- "28852052"
-apiKey <- ""
-email <- ""
-metaData <-  GetMetaDataFromPmid(pmid, apiKey, email)
+metaData <-  GetMetaDataFromPmid(pmid)
 print(metaData)
 
 }

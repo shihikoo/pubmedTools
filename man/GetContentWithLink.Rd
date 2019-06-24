@@ -4,10 +4,12 @@
 \alias{GetContentWithLink}
 \title{GetContentWithLink}
 \usage{
-GetContentWithLink(link)
+GetContentWithLink(link, waitTime)
 }
 \arguments{
 \item{link}{a string of characters}
+
+\item{waitTime}{a number. Waiting of the program}
 }
 \value{
 a string of characters of the returned content
@@ -18,7 +20,6 @@ GetContentWithLink
 \examples{
 baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
-content <- GetContentWithLink(link)
-
+content <- GetContentWithLink(link, 0.3)
 
 }

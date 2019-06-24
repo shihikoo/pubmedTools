@@ -4,7 +4,7 @@
 \alias{GetPmidDoiFromPmcid}
 \title{GetPmidDoiFromPmcid}
 \usage{
-GetPmidDoiFromPmcid(pmcid, apiKey, email)
+GetPmidDoiFromPmcid(pmcid, apiKey, email, waitTime)
 }
 \arguments{
 \item{pmcid}{a string of character. PubMed central Id}
@@ -12,6 +12,8 @@ GetPmidDoiFromPmcid(pmcid, apiKey, email)
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{email}{a string of characters. Your email address}
+
+\item{waitTime}{a number. Waiting of the program}
 }
 \value{
 a string: pmid
@@ -20,6 +22,6 @@ a string: pmid
 GetPmidDoiFromPmcid
 }
 \examples{
-pmid <- GetPmidDoiFromPmcid("28852052", "",  "")
+pmid <- GetPmidDoiFromPmcid("28852052", "",  "", 0.3)
 
 }

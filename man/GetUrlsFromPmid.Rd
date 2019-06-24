@@ -4,7 +4,8 @@
 \alias{GetUrlsFromPmid}
 \title{GetUrlsFromPmid}
 \usage{
-GetUrlsFromPmid(pmid, apiKey, email, fulltext = T)
+GetUrlsFromPmid(pmid, apiKey = "", email = "", waitTime = 0.3,
+  fulltext = TRUE)
 }
 \arguments{
 \item{pmid}{a number or a string of characters. The number of pmid.}
@@ -12,6 +13,8 @@ GetUrlsFromPmid(pmid, apiKey, email, fulltext = T)
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{email}{a string of characters. Your email address}
+
+\item{waitTime}{a number. Waiting of the program}
 
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
@@ -24,6 +27,6 @@ Get related full text urls from given pmid
 }
 \examples{
  pmid <- "28852052"
-url <-  GetUrlsFromPmid(pmid, "", "")
+url <-  GetUrlsFromPmid(pmid, "", "",0.3)
 
 }

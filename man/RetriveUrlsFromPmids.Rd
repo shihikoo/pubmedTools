@@ -4,7 +4,8 @@
 \alias{RetriveUrlsFromPmids}
 \title{RetriveUrlsFromPmids}
 \usage{
-RetriveUrlsFromPmids(pmids, apiKey, email, fulltext = T)
+RetriveUrlsFromPmids(pmids, apiKey = "", email = "", waitTime = 0.3,
+  fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a list of numbers or characters. The number of pmid.}
@@ -12,6 +13,8 @@ RetriveUrlsFromPmids(pmids, apiKey, email, fulltext = T)
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{email}{a string of characters. Your email address}
+
+\item{waitTime}{a number. Waiting of the program}
 
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
@@ -24,9 +27,7 @@ Retrive urls from pmids
 }
 \examples{
 pmids <- c("28852052", "29041955")
-apiKey <- ""
-email <- ""
-urls <-  RetriveUrlsFromPmids(pmids, apiKey, email)
+urls <-  RetriveUrlsFromPmids(pmids, "", "", 0.3, TRUE)
 print(urls)
 
 }

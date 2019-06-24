@@ -29,21 +29,20 @@ GetBaselink <- function(db,id, apiKey = "", email = ""){
 #' GetContentWithLink
 #'
 #' @param link a string of characters
+#' @param waitTime a number. Waiting of the program
 #'
 #' @return a string of characters of the returned content
 #' @export
 #'
 #' @examples baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 #' link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
-#' content <- GetContentWithLink(link)
-#'
+#' content <- GetContentWithLink(link, 0.3)
 #'
 #' @import httr
 #'
-GetContentWithLink <- function(link){
+GetContentWithLink <- function(link, waitTime){
   tryCatch({
-    if(grep("api_key",link)) Sys.sleep(0.1)
-    else Sys.sleep(0.3)
+    Sys.sleep(waitTime)
     r0 <- httr::GET(as.character(link))
     content <- httr::content(r0, "text")
     return(content)
@@ -75,22 +74,23 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #' @param pmcid a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
 #'
 #' @return a string: pmid
 #' @export
 #'
-#' @examples pmid <- GetPmidDoiFromPmcid("28852052", "",  "")
+#' @examples pmid <- GetPmidDoiFromPmcid("28852052", "",  "", 0.3)
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcid, apiKey, email){
-  GetPmidContentFromPmcid <- function(pmcid, apiKey, email){
+GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
+  GetPmidContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
     links <- GetBaselink("pmc", pmcid,apiKey, email)
-    content <- GetContentWithLink(links["EsummaryLink"])
+    content <- GetContentWithLink(links["EsummaryLink"], waitTime)
     return(content)
   }
 
-  content <- GetPmidContentFromPmcid(pmcid, apiKey, email)
+  content <- GetPmidContentFromPmcid(pmcid, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
@@ -108,26 +108,25 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey, email){
 #' @param pmid a string of character. PubMed Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
 #' @examples pmid <- "28852052"
-#' apiKey <- ""
-#' email <- ""
-#' metaData <-  GetMetaDataFromPmid(pmid, apiKey, email)
+#' metaData <-  GetMetaDataFromPmid(pmid)
 #' print(metaData)
 #'
 #' @import XML
 #'
-GetMetaDataFromPmid <- function(pmid, apiKey, email){
-  GetEfetchContentFromPmid <- function(pmid, apiKey, email){
+GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
+  GetEfetchContentFromPmid <- function(pmid, apiKey, email, waitTime){
     links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["EfetcLink"])
+    content <- GetContentWithLink(links["EfetcLink"], waitTime)
     return(content)
   }
 
-  content <- GetEfetchContentFromPmid(pmid, apiKey, email)
+  content <- GetEfetchContentFromPmid(pmid, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
 
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
@@ -156,26 +155,23 @@ GetMetaDataFromPmid <- function(pmid, apiKey, email){
   return(myData)
 }
 
-
-
 #' RetriveMetaDataFromPmids
 #'
 #' @param pmids a string of character. PubMed Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
 #' @examples  pmids <- c("28852052", "29041955")
-#' apiKey <- ""
-#' email <- ""
-#' metaData <-  RetriveMetaDataFromPmids(pmids, apiKey, email)
+#' metaData <-  RetriveMetaDataFromPmids(pmids)
 #' print(metaData)
 #'
 #'
-RetriveMetaDataFromPmids <- function(pmids, apiKey, email){
-  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email)
+RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3){
+  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email, waitTime = waitTime)
   return(as.data.frame(t(metaDataFromPMIDs)))
 }
 
@@ -186,6 +182,7 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey, email){
 #' @param pmid a number or a string of characters. The number of pmid.
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
 #' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
@@ -194,14 +191,15 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey, email){
 #' @export
 #'
 #' @examples  pmid <- "28852052"
-#' url <-  GetUrlsFromPmid(pmid, "", "")
+#' url <-  GetUrlsFromPmid(pmid, "", "",0.3)
 #'
 #' @import XML
 #'
-GetUrlsFromPmid <- function(pmid, apiKey, email, fulltext = T){
-  GetUrlsContentWithPmid <- function(pmid, apiKey, email){
+GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext = TRUE){
+  GetUrlsContentWithPmid <- function(pmid, apiKey, email, waitTime){
+    print(email)
     links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["ELinkURLsLink"])
+    content <- GetContentWithLink(links["ELinkURLsLink"], waitTime)
     return(content)
   }
   RetriveUrlfromContent <-function(content, category = "All"){
@@ -220,7 +218,7 @@ GetUrlsFromPmid <- function(pmid, apiKey, email, fulltext = T){
     return(myData)
   }
 
-  content <- GetUrlsContentWithPmid(pmid, apiKey, email)
+  content <- GetUrlsContentWithPmid(pmid, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
 
   if(fulltext == T) category <- "Full Text Sources" else category = "All"
@@ -238,6 +236,7 @@ GetUrlsFromPmid <- function(pmid, apiKey, email, fulltext = T){
 #' @param pmids a list of numbers or characters. The number of pmid.
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
 #' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
@@ -245,13 +244,11 @@ GetUrlsFromPmid <- function(pmid, apiKey, email, fulltext = T){
 #' @export
 #'
 #' @examples pmids <- c("28852052", "29041955")
-#' apiKey <- ""
-#' email <- ""
-#' urls <-  RetriveUrlsFromPmids(pmids, apiKey, email)
+#' urls <-  RetriveUrlsFromPmids(pmids, "", "", 0.3, TRUE)
 #' print(urls)
 #'
-RetriveUrlsFromPmids <- function(pmids, apiKey, email, fulltext = T){
-  urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, fulltext = fulltext, apiKey = apiKey, email = email)
+RetriveUrlsFromPmids <- function(pmids, apiKey="", email="", waitTime=0.3, fulltext = TRUE){
+  urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, apiKey = apiKey, email = email, waitTime = waitTime, fulltext = fulltext)
   return(urlFromPMIDs)
 }
 
