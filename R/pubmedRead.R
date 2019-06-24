@@ -226,7 +226,6 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3)
 #'
 GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext = TRUE){
   GetUrlsContentWithPmid <- function(pmid, apiKey, email, waitTime){
-    print(email)
     links <- GetBaselink("pubmed", pmid, apiKey, email)
     content <- GetContentWithLink(links["ELinkURLsLink"], waitTime)
     return(content)
