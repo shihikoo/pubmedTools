@@ -22,6 +22,6 @@ a string: pmid
 GetPmidDoiFromPmcid
 }
 \examples{
-pmid <- GetPmidDoiFromPmcid("28852052", "",  "", 0.3)
+pmid <- GetPmidDoiFromPmcid("5575286", "",  "", 0.3)
 
 }

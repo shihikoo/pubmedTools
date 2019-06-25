@@ -42,14 +42,18 @@ GetBaselink <- function(db,ids, apiKey = "", email = ""){
 #' @import httr
 #'
 GetContentWithLink <- function(link, waitTime){
+  httr::set_config(httr::config(http_version = 0))
+  content = NULL
+  while(is.null(content)){
   tryCatch({
     Sys.sleep(waitTime)
     r0 <- httr::GET(as.character(link))
     content <- httr::content(r0, "text")
-    return(content)
   }, error=function(e){
-    return(NULL)
-  })
+      print(e)
+    })
+    }
+  return(content)
 }
 
 #' RetriveXmlNodeValuefromDoc
@@ -63,7 +67,7 @@ GetContentWithLink <- function(link, waitTime){
 #' @import XML
 #'
 RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
-  nodes <- xpathApply(doc, nodePosition )
+  nodes <- XML::xpathApply(doc, nodePosition )
   if(length(nodes) == 0) return(NULL)
   results <- sapply(nodes, XML::xmlValue)
   return(results)
@@ -79,7 +83,7 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #' @return a string: pmid
 #' @export
 #'
-#' @examples pmid <- GetPmidDoiFromPmcid("28852052", "",  "", 0.3)
+#' @examples pmid <- GetPmidDoiFromPmcid("5575286", "",  "", 0.3)
 #'
 #' @import XML
 #'
@@ -91,16 +95,19 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
   }
   content <- GetPmidContentFromPmcid(pmcid, apiKey, email, waitTime)
   if(is.null(content)) {return (NULL)}
+
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
-  pmids <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='pmid']")
-  if(is.null(pmids)) return(NULL)
+  articles <- XML::xpathApply(doc, "//DocSum//Item[@Name='ArticleIds']")
 
-  # dois <- RetriveXmlNodeValuefromDoc(doc, "//Item[@Name='doi']")
-  # if(is.null(dois)) return(NULL)
-  # temp <- data.frame(pmid=pmids,doi=dois)
+  results <- do.call(rbind, XML::xpathApply(doc, "//DocSum//Item[@Name='ArticleIds']", function(node)
+  {
+    pmid <- XML::xmlValue(XML::xpathApply(node, "Item[@Name='pmid']")[[1]])
+    doi <- XML::xmlValue(XML::xpathApply(node, "Item[@Name='doi']")[[1]])
+    return(cbind(pmid, doi))
+  }))
 
-  return( data.frame(pmid=pmids))
+  return( as.data.frame(results))
 }
 
 #' GetPmidDoiFromPmcidBatch
@@ -163,9 +170,11 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
 
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
+  pmid <- RetriveXmlNodeValuefromDoc(doc,  "//article-meta//article-id[@pub-id-type='pmid']")
   journal <- RetriveXmlNodeValuefromDoc(doc,  "//Journal//Title")
   journalCountry <- RetriveXmlNodeValuefromDoc(doc,  "//MedlineJournalInfo//Country")
   publicationYear <- RetriveXmlNodeValuefromDoc(doc,  "//JournalIssue//PubDate//Year")
+
   authors <- do.call(rbind, xpathApply(doc, "//Author", function(node)
   {
     forename <- XML::xmlValue(node[["ForeName"]])

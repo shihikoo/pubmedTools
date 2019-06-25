@@ -2,7 +2,7 @@ library(rjson)
 
 apiKey <- rjson::fromJSON(file = "configure.json")$APIKey
 email <- "shihikoo@gmail.com"
-pmids <- c("28852052", "29041955")
+pmids <- c("28852052", "29041955","31230181")
 pmid <- pmids[1]
 pmcids <- c("5575286", "4804230")
 pmcid <- pmcids[1]
