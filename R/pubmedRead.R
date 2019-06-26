@@ -245,11 +245,16 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
                              ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
 
-    authors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@contrib-type='author']//name", function(author){
-      forename <- XML::xmlValue(author[["given-names"]])
-      lastname <- XML::xmlValue(author[["surname"]])
-      return(paste(forename, lastname))
-    }))
+    authorsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
+    if(is.null(authorsNode)) {
+      authors = NA
+    } else {
+      authors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@contrib-type='author']//name", function(author){
+        forename <- XML::xmlValue(author[["given-names"]])
+        lastname <- XML::xmlValue(author[["surname"]])
+        return(paste(forename, lastname))
+      }))
+    }
 
     if(length(authors) > 0) {
       authors <- paste(authors, collapse = ", ")
@@ -272,7 +277,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       affiliations <- XML::xpathApply(article,  "//contrib-group//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
       if(is.null(correspondingAuthorAffIdsNode)) { correspondingAuthorAffIds <- NA
-        correspondingAuthorAffs <- NA} else {
+      correspondingAuthorAffs <- NA} else {
         correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref", function(corrAuthorAff){
           affid <- as.numeric(XML::xmlValue(corrAuthorAff))
           return(affid)
@@ -339,7 +344,7 @@ GetMetaDataFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime=0, w
     temp <- GetMetaDataFromPmcid(pmcids[iindex], apiKey=apiKey, email=email, writeFileName = writeFileName)
     results[, -1] <- temp
     colnames(results) <- c("pmcid",names(temp))
-    }
+  }
   return(results)
 }
 
