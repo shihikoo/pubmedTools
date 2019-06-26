@@ -4,7 +4,7 @@
 \alias{GetPmidDoiFromPmcid}
 \title{GetPmidDoiFromPmcid}
 \usage{
-GetPmidDoiFromPmcid(pmcid, apiKey, email, waitTime)
+GetPmidDoiFromPmcid(pmcid, apiKey = "", email = "", waitTime = 0.3)
 }
 \arguments{
 \item{pmcid}{a string of character. PubMed central Id}
@@ -22,6 +22,6 @@ a string: pmid
 GetPmidDoiFromPmcid
 }
 \examples{
-pmid <- GetPmidDoiFromPmcid("5575286", "",  "", 0.3)
+GetPmidDoiFromPmcid(c("5575286", "4804230"))
 
 }

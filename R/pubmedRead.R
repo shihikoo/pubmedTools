@@ -16,9 +16,9 @@ GetBaselink <- function(db,ids, apiKey = "", email = ""){
   idsStr <- paste0(ids,collapse = ",")
   baseUrl <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   links <- data.frame(
-    ELinkURLsLink = paste0(baseUrl, "elink.fcgi?dbfrom=",db,"&cmd=llinks&id=",idsStr),
-    EfetcLink = paste0(baseUrl, "efetch.fcgi?db=",db,"&id=",idsStr,"&retmode=xml"),
-    EsummaryLink = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",idsStr),
+    elink = paste0(baseUrl, "elink.fcgi?dbfrom=",db,"&cmd=llinks&id=",idsStr),
+    efetch = paste0(baseUrl, "efetch.fcgi?db=",db,"&id=",idsStr,"&retmode=xml"),
+    esummary = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",idsStr),
     stringsAsFactors = F
   )
   if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=", apiKey))
@@ -45,14 +45,14 @@ GetContentWithLink <- function(link, waitTime){
   httr::set_config(httr::config(http_version = 0))
   content = NULL
   while(is.null(content)){
-  tryCatch({
-    Sys.sleep(waitTime)
-    r0 <- httr::GET(as.character(link))
-    content <- httr::content(r0, "text")
-  }, error=function(e){
+    tryCatch({
+      Sys.sleep(waitTime)
+      r0 <- httr::GET(as.character(link))
+      content <- httr::content(r0, "text")
+    }, error=function(e){
       print(e)
     })
-    }
+  }
   return(content)
 }
 
@@ -67,10 +67,56 @@ GetContentWithLink <- function(link, waitTime){
 #' @import XML
 #'
 RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
-  nodes <- XML::xpathApply(doc, nodePosition )
-  if(length(nodes) == 0) return(NULL)
+  nodes <- XML::xpathApply(doc, nodePosition)
+  if(length(nodes) == 0) return(NA)
   results <- sapply(nodes, XML::xmlValue)
   return(results)
+}
+
+#' GetXmlDocFromIds
+#'
+#' @param ids a string of chacters. Valid NCBI ids
+#' @param database a string of chacters. Valid NCBI
+#' @param target a string of chacters. "efetch", "esummary", "elink"
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Time to wait during the http quest
+#'
+#' @return a XMLInternalDocument
+#' @export
+#'
+#' @import XML
+#'
+#' @examples GetXmlDocFromIds("5575286", "pmc", "efetch", "", "", 0.3)
+#'
+GetXmlDocFromIds <- function(ids, database, target, apiKey, email, waitTime){
+  links <- GetBaselink(database, ids, apiKey, email)
+  content <- GetContentWithLink(links[target], waitTime)
+  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
+  return(doc)
+}
+
+#' ReadPmidDoiFromPmcidEsummaryDoc
+#'
+#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#'
+#' @return extract pmid and doi for all articles in the doc
+#' @export
+#'
+#' @examples  doc <- GetXmlDocFromIds(c("5575286", "4804230"), "pmc", "esummary", "", "", 0)
+#' ReadPmidDoiFromPmcidEsummaryDoc(doc)
+#'
+#' @import XML
+#'
+ReadPmidDoiFromPmcidEsummaryDoc <- function(doc){
+  results <- do.call(rbind, XML::xpathApply(doc, "//DocSum", function(x)
+  {
+    node <- XML::xmlDoc(x)
+    pmid <- RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='pmid']")
+    doi <- RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='doi']")
+    return(cbind(pmid, doi))
+  }))
+  return(as.data.frame(results, stringsAsFactors = F))
 }
 
 #' GetPmidDoiFromPmcid
@@ -83,31 +129,14 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #' @return a string: pmid
 #' @export
 #'
-#' @examples pmid <- GetPmidDoiFromPmcid("5575286", "",  "", 0.3)
+#' @examples GetPmidDoiFromPmcid(c("5575286", "4804230"))
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
-  GetPmidContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
-    links <- GetBaselink("pmc", pmcid, apiKey, email)
-    content <- GetContentWithLink(links["EsummaryLink"], waitTime)
-    return(content)
-  }
-  content <- GetPmidContentFromPmcid(pmcid, apiKey, email, waitTime)
-  if(is.null(content)) {return (NULL)}
-
-  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-
-  articles <- XML::xpathApply(doc, "//DocSum//Item[@Name='ArticleIds']")
-
-  results <- do.call(rbind, XML::xpathApply(doc, "//DocSum//Item[@Name='ArticleIds']", function(node)
-  {
-    pmid <- XML::xmlValue(XML::xpathApply(node, "Item[@Name='pmid']")[[1]])
-    doi <- XML::xmlValue(XML::xpathApply(node, "Item[@Name='doi']")[[1]])
-    return(cbind(pmid, doi))
-  }))
-
-  return( as.data.frame(results))
+GetPmidDoiFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3){
+  doc <- GetXmlDocFromIds(pmcid, "pmc", "esummary", apiKey, email, waitTime)
+  result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
+  return(result)
 }
 
 #' GetPmidDoiFromPmcidBatch
@@ -120,26 +149,116 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey, email, waitTime){
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples pmid <- GetPmidDoiFromPmcidBatch(c("5575286", "4804230"), "",  "", 0)
+#' @examples pmid <- GetPmidDoiFromPmcidBatch(c("5575286", "4804230"), waitTime = 0.3)
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey, email, waitTime){
+GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime = 0){
   nids <- length(pmcids)
   grid <- 500
   nloop <- ceiling(nids/grid)
   results <- as.data.frame(matrix(nrow = nids, ncol = 3))
-  # colnames(results) <- c("pmcid", "pmid", "doi")
-  colnames(results) <- c("pmcid", "pmid")
-
-  temp <- NULL
+  colnames(results) <- c("pmcid", "pmid", "doi")
   for(iloop in 1:nloop){
     iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
     results[iindex,1] <- pmcids[iindex]
-    while(is.null(temp)){temp <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)}
-    results[iindex,2:3] <- temp
+    results[iindex,2:3] <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
   }
   return(results)
+}
+
+#' DownloadMetaDataWithPmcidsBatch
+#'
+#' @param pmcids a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#' @param fileBaseName a string of character. The base name of the to be saved xml files
+#'
+#' @return a nx3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples DownloadMetaDataWithPmcidsBatch(c("5575286", "4804230"), "",  "", 0, "test.xml")
+#'
+#' @import XML
+#'
+DownloadMetaDataWithPmcidsBatch <- function(pmcids, apiKey, email, waitTime, fileBaseName){
+  nids <- length(pmcids)
+  grid <- 500
+  nloop <- ceiling(nids/grid)
+  for(iloop in 1:nloop){
+    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    doc <- GetXmlDocFromIds(pmcids, "pmc", "efetch", apiKey, email, waitTime)
+    outputFile <- XML::saveXML(doc, file = paste0(gsub("[.]xml","", fileBaseName), min(iindex),"_", max(iindex), ".xml"))
+  }
+  return(nloop)
+}
+
+#' ReadMetaDataFromPmcidEfetchDoc
+#'
+#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#'
+#' @return a nx3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples  doc <- GetXmlDocFromIds(c("4804230", "5575286"), "pmc", "efetch", "", "", 0)
+#' ReadMetaDataFromPmcidEfetchDoc(doc)
+#'
+#' @import XML
+#'
+ReadMetaDataFromPmcidEfetchDoc <- function(doc){
+  results <- do.call(rbind, XML::xpathApply(doc, "//article", function(x){
+    article <- XML::xmlDoc(x)
+    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-meta//article-id[@pub-id-type='pmid']")
+    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-meta//journal-title-group//journal-title")
+    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher//publisher-loc")
+
+    publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
+                             ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
+
+    authors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@contrib-type='author']//name", function(author){
+      forename <- XML::xmlValue(author[["given-names"]])
+      lastname <- XML::xmlValue(author[["surname"]])
+      return(paste(forename, lastname))
+    }))
+
+    if(length(authors) > 0) {
+      authors <- paste(authors, collapse = ", ")
+      affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
+
+      correspondingAuthorsNode <-  XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name")
+      if(is.null(correspondingAuthorsNode)) {
+        correspondingAuthors <- authors
+
+      } else{
+        correspondingAuthors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor){
+          forename <- XML::xmlValue(corrAuthor[["given-names"]])
+          lastname <- XML::xmlValue(corrAuthor[["surname"]])
+          return(paste(forename, lastname))
+        }))
+      }
+
+      if(!is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
+
+      affiliations <- XML::xpathApply(article,  "//contrib-group//aff")
+      correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
+      if(is.null(correspondingAuthorAffIdsNode)) { correspondingAuthorAffIds <- NA
+        correspondingAuthorAffs <- NA} else {
+        correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref", function(corrAuthorAff){
+          affid <- as.numeric(XML::xmlValue(corrAuthorAff))
+          return(affid)
+        })))
+        correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue),collapse = "")
+      }
+
+      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue)),collapse = ""))
+      if(is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
+      return(cbind(pmid,journal, journalLocation, publicationDate, authors
+                   , correspondingAuthors, affiliations, correspondingAuthorAffs))
+    } else {cbind(pmid,journal, journalLocation, publicationDate, NA, NA, NA, NA)
+    }}))
+
+  return(as.data.frame(results, stringsAsFactors = F))
 }
 
 #' GetMetaDataFromPmid
@@ -152,16 +271,13 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey, email, waitTime){
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples pmid <- "28852052"
-#' metaData <-  GetMetaDataFromPmid(pmid)
-#' print(metaData)
-#'
+#' @examples  metaData1 <-  GetMetaDataFromPmid(c("28852052", "29041955","31230181"))
 #' @import XML
 #'
 GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
   GetEfetchContentFromPmid <- function(pmid, apiKey, email, waitTime){
     links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["EfetcLink"], waitTime)
+    content <- GetContentWithLink(links["efetch"], waitTime)
     return(content)
   }
 
@@ -170,30 +286,73 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
 
   doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
-  pmid <- RetriveXmlNodeValuefromDoc(doc,  "//article-meta//article-id[@pub-id-type='pmid']")
-  journal <- RetriveXmlNodeValuefromDoc(doc,  "//Journal//Title")
-  journalCountry <- RetriveXmlNodeValuefromDoc(doc,  "//MedlineJournalInfo//Country")
-  publicationYear <- RetriveXmlNodeValuefromDoc(doc,  "//JournalIssue//PubDate//Year")
+  results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x){
+    article <- XML::xmlDoc(x)
+    pmid <- RetriveXmlNodeValuefromDoc(article,  "//PMID")
+    journal <- RetriveXmlNodeValuefromDoc(article,  "//Journal//Title")
+    journalCountry <- RetriveXmlNodeValuefromDoc(article,  "//MedlineJournalInfo//Country")
+    publicationYear <- RetriveXmlNodeValuefromDoc(article,  "//JournalIssue//PubDate//Year")
 
-  authors <- do.call(rbind, xpathApply(doc, "//Author", function(node)
-  {
-    forename <- XML::xmlValue(node[["ForeName"]])
-    lastname <- XML::xmlValue(node[["LastName"]])
-    return(paste(forename, lastname))
+    authors <- do.call(rbind, XML::xpathApply(article, "//Author", function(subnode)
+    {
+      forename <- XML::xmlValue(subnode[["ForeName"]])
+      lastname <- XML::xmlValue(subnode[["LastName"]])
+      return(paste(forename, lastname))
+    }))
+    authors <- paste(authors, collapse = ", ")
+    affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "||")
+
+    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliation))
   }))
-  authors <- paste(authors, collapse = ", ")
-  affiliation <- RetriveXmlNodeValuefromDoc(doc,  "//Affiliation")
 
-  myData <- data.frame(
-    journal = journal,
-    journalCountry = journalCountry,
-    publicationYear = publicationYear,
-    authors = authors,
-    affiliation = affiliation,
-    stringsAsFactors = F
-  )
+  return( as.data.frame(results, stringsAsFactors = F))
+}
 
-  return(myData)
+#' GetMetaDataFromPmcid
+#'
+#' @param pmcid a string of character. PubMed Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#' @param writeFileName a string of characters. The file name you would like to download to.
+#'
+#' @return a list of metaDatarmation retrived from PubMed
+#' @export
+#'
+#' @examples GetMetaDataFromPmcid(c("5575286", "4804230"))
+#'
+#' @import XML
+#'
+GetMetaDataFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName = ""){
+  GetEfetchContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
+    links <- GetBaselink("pmc", pmcid, apiKey, email)
+    content <- GetContentWithLink(links["efetch"], waitTime)
+    return(content)
+  }
+  content <- GetEfetchContentFromPmcid(pmcid, apiKey, email, waitTime)
+  if(is.null(content)) {return (NULL)}
+  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
+  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
+
+  results <- do.call(rbind, XML::xpathApply(doc, "//article", function(x){
+    article <- XML::xmlDoc(x)
+    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-meta//article-id[@pub-id-type='pmid']")
+    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-meta//journal-title-group//journal-title")
+    journalCountry <- RetriveXmlNodeValuefromDoc(article,  "//publisher//publisher-loc")
+    publicationYear <- RetriveXmlNodeValuefromDoc(article,  "//history//date[@date-type='accepted']//year")
+
+    authors <- do.call(rbind, XML::xpathApply(article, "//contrib-group//contrib[@contrib-type='author']", function(subnode){
+      forename <- XML::xmlValue(subnode[["ForeName"]])
+      lastname <- XML::xmlValue(subnode[["LastName"]])
+      return(paste(forename, lastname))
+    }))
+    authors <- paste(authors, collapse = ", ")
+    affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff//institution-wrap")), collapse = "||")
+
+    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliation))
+  }))
+
+  return( as.data.frame(results, stringsAsFactors = F))
 }
 
 #' RetriveMetaDataFromPmids
@@ -206,10 +365,7 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  pmids <- c("28852052", "29041955")
-#' metaData <-  RetriveMetaDataFromPmids(pmids)
-#' print(metaData)
-#'
+#' @examples  metaData <-  RetriveMetaDataFromPmids(c("28852052", "29041955"))
 #'
 RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3){
   metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email, waitTime = waitTime)
@@ -231,21 +387,20 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3)
 #'
 #' @export
 #'
-#' @examples  pmid <- "28852052"
-#' url <-  GetUrlsFromPmid(pmid, "", "",0.3)
+#' @examples GetUrlsFromPmid("28852052", "", "",0.3)
 #'
 #' @import XML
 #'
 GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext = TRUE){
   GetUrlsContentWithPmid <- function(pmid, apiKey, email, waitTime){
     links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["ELinkURLsLink"], waitTime)
+    content <- GetContentWithLink(links["elink"], waitTime)
     return(content)
   }
   RetriveUrlfromContent <-function(content, category = "All"){
     doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
 
-    myData <- do.call(rbind, xpathApply(doc, "//ObjUrl", function(node)
+    myData <- do.call(rbind, XML::xpathApply(doc, "//ObjUrl", function(node)
     {
       url <- XML::xmlValue(node[["Url"]])
       category <- XML::xmlValue(node[["Category"]])
@@ -283,9 +438,7 @@ GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext 
 #' Return NULL if none is found.
 #' @export
 #'
-#' @examples pmids <- c("28852052", "29041955")
-#' urls <-  RetriveUrlsFromPmids(pmids, "", "", 0.3, TRUE)
-#' print(urls)
+#' @examples  RetriveUrlsFromPmids(c("28852052", "29041955"), "", "", 0.3, TRUE)
 #'
 RetriveUrlsFromPmids <- function(pmids, apiKey="", email="", waitTime=0.3, fulltext = TRUE){
   urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, apiKey = apiKey, email = email, waitTime = waitTime, fulltext = fulltext)

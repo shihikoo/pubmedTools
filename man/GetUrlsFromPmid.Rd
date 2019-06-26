@@ -26,7 +26,6 @@ Return NULL if none is found.
 Get related full text urls from given pmid
 }
 \examples{
- pmid <- "28852052"
-url <-  GetUrlsFromPmid(pmid, "", "",0.3)
+GetUrlsFromPmid("28852052", "", "",0.3)
 
 }

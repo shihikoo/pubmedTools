@@ -26,8 +26,6 @@ Return NULL if none is found.
 Retrive urls from pmids
 }
 \examples{
-pmids <- c("28852052", "29041955")
-urls <-  RetriveUrlsFromPmids(pmids, "", "", 0.3, TRUE)
-print(urls)
+ RetriveUrlsFromPmids(c("28852052", "29041955"), "", "", 0.3, TRUE)
 
 }

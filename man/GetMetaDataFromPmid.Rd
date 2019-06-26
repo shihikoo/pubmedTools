@@ -22,8 +22,5 @@ a list of metaDatarmation retrived from PubMed
 GetMetaDataFromPmid
 }
 \examples{
-pmid <- "28852052"
-metaData <-  GetMetaDataFromPmid(pmid)
-print(metaData)
-
+ metaData1 <-  GetMetaDataFromPmid(c("28852052", "29041955","31230181"))
 }
