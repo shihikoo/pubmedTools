@@ -4,3 +4,4 @@ configure.json
 inst/doc
 .Rhistory
 .RData
+*.xml

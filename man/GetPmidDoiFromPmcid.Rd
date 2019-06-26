@@ -4,7 +4,8 @@
 \alias{GetPmidDoiFromPmcid}
 \title{GetPmidDoiFromPmcid}
 \usage{
-GetPmidDoiFromPmcid(pmcid, apiKey = "", email = "", waitTime = 0.3)
+GetPmidDoiFromPmcid(pmcid, apiKey = "", email = "", waitTime = 0.3,
+  writeFileName = "")
 }
 \arguments{
 \item{pmcid}{a string of character. PubMed central Id}
@@ -14,6 +15,8 @@ GetPmidDoiFromPmcid(pmcid, apiKey = "", email = "", waitTime = 0.3)
 \item{email}{a string of characters. Your email address}
 
 \item{waitTime}{a number. Waiting of the program}
+
+\item{writeFileName}{a string of characters.}
 }
 \value{
 a string: pmid

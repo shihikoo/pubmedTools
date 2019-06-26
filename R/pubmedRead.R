@@ -125,6 +125,7 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc){
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
 #' @param waitTime a number. Waiting of the program
+#' @param writeFileName a string of characters.
 #'
 #' @return a string: pmid
 #' @export
@@ -133,8 +134,9 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc){
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3){
+GetPmidDoiFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName=""){
   doc <- GetXmlDocFromIds(pmcid, "pmc", "esummary", apiKey, email, waitTime)
+  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
   result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
   return(result)
 }
@@ -178,17 +180,44 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime = 0){
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples DownloadMetaDataWithPmcidsBatch(c("5575286", "4804230"), "",  "", 0, "test.xml")
+#' @examples DownloadMetaDataWithPmcidsBatch(c("5575286", "4804230"), fileBaseName="test.xml")
 #'
 #' @import XML
 #'
-DownloadMetaDataWithPmcidsBatch <- function(pmcids, apiKey, email, waitTime, fileBaseName){
+DownloadMetaDataWithPmcidsBatch <- function(pmcids, apiKey="", email="", waitTime=0, fileBaseName=""){
   nids <- length(pmcids)
   grid <- 500
   nloop <- ceiling(nids/grid)
   for(iloop in 1:nloop){
     iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
-    doc <- GetXmlDocFromIds(pmcids, "pmc", "efetch", apiKey, email, waitTime)
+    doc <- GetXmlDocFromIds(pmcids[iindex], "pmc", "efetch", apiKey, email, waitTime)
+    outputFile <- XML::saveXML(doc, file = paste0(gsub("[.]xml","", fileBaseName), min(iindex),"_", max(iindex), ".xml"))
+  }
+  return(nloop)
+}
+
+#' DownloadMetaDataWithPmidsBatch
+#'
+#' @param pmids a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#' @param fileBaseName a string of character. The base name of the to be saved xml files
+#'
+#' @return a nx3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples DownloadMetaDataWithPmidsBatch(c("28852052", "29041955","31230181"),fileBaseName="test.xml")
+#'
+#' @import XML
+#'
+DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=0, fileBaseName=""){
+  nids <- length(pmids)
+  grid <- 500
+  nloop <- ceiling(nids/grid)
+  for(iloop in 1:nloop){
+    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    doc <- GetXmlDocFromIds(pmids[iindex], "pubmed", "efetch", apiKey, email, waitTime)
     outputFile <- XML::saveXML(doc, file = paste0(gsub("[.]xml","", fileBaseName), min(iindex),"_", max(iindex), ".xml"))
   }
   return(nloop)
@@ -261,6 +290,59 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
   return(as.data.frame(results, stringsAsFactors = F))
 }
 
+#' GetMetaDataFromPmcid
+#'
+#' @param pmcid a string of character. PubMed Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#' @param writeFileName a string of characters. The file name you would like to download to.
+#'
+#' @return a list of metaDatarmation retrived from PubMed
+#' @export
+#'
+#' @examples GetMetaDataFromPmcid(c("5575286", "4804230"))
+#'
+#' @import XML
+#'
+GetMetaDataFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName = ""){
+  doc <- GetXmlDocFromIds(pmcid, "pmc", "efetch", apiKey, email, waitTime)
+  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
+  result <- ReadMetaDataFromPmcidEfetchDoc(doc)
+  return(result)
+}
+
+#' GetMetaDataFromPmcidBatch
+#'
+#' @param pmcids a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param email a string of characters. Your email address
+#' @param waitTime a number. Waiting of the program
+#' @param writeFileName a string of character. The base name of the to be saved xml files
+#'
+#' @return a nx3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples GetMetaDataFromPmcidBatch(c("5575286", "4804230"))
+#'
+#' @import XML
+#'
+GetMetaDataFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime=0, writeFileName=""){
+  nids <- length(pmcids)
+  grid <- 500
+  nloop <- ceiling(nids/grid)
+  results <- as.data.frame(matrix(nrow = nids, ncol = 9))
+  # colnames(results) <- c("pmcid", "pmid", "doi")
+  for(iloop in 1:nloop){
+    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    results[, 1] <- pmcids[iindex]
+    temp <- GetMetaDataFromPmcid(pmcids[iindex], apiKey=apiKey, email=email, writeFileName = writeFileName)
+    results[, -1] <- temp
+    colnames(results) <- c("pmcid",names(temp))
+    }
+  return(results)
+}
+
 #' GetMetaDataFromPmid
 #'
 #' @param pmid a string of character. PubMed Id
@@ -301,53 +383,6 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
     }))
     authors <- paste(authors, collapse = ", ")
     affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "||")
-
-    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliation))
-  }))
-
-  return( as.data.frame(results, stringsAsFactors = F))
-}
-
-#' GetMetaDataFromPmcid
-#'
-#' @param pmcid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
-#' @param waitTime a number. Waiting of the program
-#' @param writeFileName a string of characters. The file name you would like to download to.
-#'
-#' @return a list of metaDatarmation retrived from PubMed
-#' @export
-#'
-#' @examples GetMetaDataFromPmcid(c("5575286", "4804230"))
-#'
-#' @import XML
-#'
-GetMetaDataFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName = ""){
-  GetEfetchContentFromPmcid <- function(pmcid, apiKey, email, waitTime){
-    links <- GetBaselink("pmc", pmcid, apiKey, email)
-    content <- GetContentWithLink(links["efetch"], waitTime)
-    return(content)
-  }
-  content <- GetEfetchContentFromPmcid(pmcid, apiKey, email, waitTime)
-  if(is.null(content)) {return (NULL)}
-  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
-
-  results <- do.call(rbind, XML::xpathApply(doc, "//article", function(x){
-    article <- XML::xmlDoc(x)
-    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-meta//article-id[@pub-id-type='pmid']")
-    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-meta//journal-title-group//journal-title")
-    journalCountry <- RetriveXmlNodeValuefromDoc(article,  "//publisher//publisher-loc")
-    publicationYear <- RetriveXmlNodeValuefromDoc(article,  "//history//date[@date-type='accepted']//year")
-
-    authors <- do.call(rbind, XML::xpathApply(article, "//contrib-group//contrib[@contrib-type='author']", function(subnode){
-      forename <- XML::xmlValue(subnode[["ForeName"]])
-      lastname <- XML::xmlValue(subnode[["LastName"]])
-      return(paste(forename, lastname))
-    }))
-    authors <- paste(authors, collapse = ", ")
-    affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff//institution-wrap")), collapse = "||")
 
     return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliation))
   }))
@@ -444,4 +479,3 @@ RetriveUrlsFromPmids <- function(pmids, apiKey="", email="", waitTime=0.3, fullt
   urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, apiKey = apiKey, email = email, waitTime = waitTime, fulltext = fulltext)
   return(urlFromPMIDs)
 }
-
