@@ -242,8 +242,8 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-title")
     journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher-loc")
 
-    publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
-                             ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
+    publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
+                             ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
 
     authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
     if(is.null(authorsNode)) {
@@ -273,7 +273,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
 
       if(!is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
 
-      affiliations <- XML::xpathApply(article,  "//contrib-group//aff")
+      affiliations <- XML::xpathApply(article,  "//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
       if(is.null(correspondingAuthorAffIdsNode)) {
         correspondingAuthorAffIds <- NA
