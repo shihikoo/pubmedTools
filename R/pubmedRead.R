@@ -256,7 +256,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       }))
     }
 
-    if(!is.na(authors) & length(authors) > 0) {
+    if(!is.na(authors[[1]]) & length(authors) > 0) {
       authors <- paste(authors, collapse = ", ")
       affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
 
