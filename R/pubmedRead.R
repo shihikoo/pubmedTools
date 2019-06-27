@@ -162,7 +162,7 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime = 0){
   results <- as.data.frame(matrix(nrow = nids, ncol = 3))
   colnames(results) <- c("pmcid", "pmid", "doi")
   for(iloop in 1:nloop){
-    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    iindex <- (((iloop-1)*grid)+1) : ifelse(iloop*grid > nids, nids,iloop*grid)
     results[iindex,1] <- pmcids[iindex]
     results[iindex,2:3] <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
   }
@@ -238,32 +238,31 @@ DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=
 ReadMetaDataFromPmcidEfetchDoc <- function(doc){
   results <- do.call(rbind, XML::xpathApply(doc, "//article", function(x){
     article <- XML::xmlDoc(x)
-    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-meta//article-id[@pub-id-type='pmid']")
-    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-meta//journal-title-group//journal-title")
-    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher//publisher-loc")
+    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")
+    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-title")
+    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher-loc")
 
     publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
                              ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
 
-    authorsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
+    authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
     if(is.null(authorsNode)) {
       authors = NA
     } else {
-      authors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@contrib-type='author']//name", function(author){
+      authors <- do.call(rbind, XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author){
         forename <- XML::xmlValue(author[["given-names"]])
         lastname <- XML::xmlValue(author[["surname"]])
         return(paste(forename, lastname))
       }))
     }
 
-    if(length(authors) > 0) {
+    if(!is.na(authors) & length(authors) > 0) {
       authors <- paste(authors, collapse = ", ")
       affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
 
       correspondingAuthorsNode <-  XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name")
       if(is.null(correspondingAuthorsNode)) {
         correspondingAuthors <- authors
-
       } else{
         correspondingAuthors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor){
           forename <- XML::xmlValue(corrAuthor[["given-names"]])
@@ -276,8 +275,10 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
 
       affiliations <- XML::xpathApply(article,  "//contrib-group//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
-      if(is.null(correspondingAuthorAffIdsNode)) { correspondingAuthorAffIds <- NA
-      correspondingAuthorAffs <- NA} else {
+      if(is.null(correspondingAuthorAffIdsNode)) {
+        correspondingAuthorAffIds <- NA
+        correspondingAuthorAffs <- NA
+      } else {
         correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref", function(corrAuthorAff){
           affid <- as.numeric(XML::xmlValue(corrAuthorAff))
           return(affid)
@@ -339,7 +340,7 @@ GetMetaDataFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime=0, w
   results <- as.data.frame(matrix(nrow = nids, ncol = 9))
   # colnames(results) <- c("pmcid", "pmid", "doi")
   for(iloop in 1:nloop){
-    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
+    iindex <- (((iloop-1)*grid)+1) : ifelse(iloop*grid > nids, nids,iloop*grid)
     results[, 1] <- pmcids[iindex]
     temp <- GetMetaDataFromPmcid(pmcids[iindex], apiKey=apiKey, email=email, writeFileName = writeFileName)
     results[, -1] <- temp
