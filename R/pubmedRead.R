@@ -242,15 +242,14 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-title")
     journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
-    if(!is.null(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year"))){
+    epubDateNode <- RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
+    if(!is.na(epubDateNode) & !is.null(epubDateNode)){
       publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
                                ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
 
     }else{
       publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
                                ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
-
-
     }
 
     authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
