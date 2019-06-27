@@ -243,7 +243,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
     epubDateNode <- RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
-    if(!is.na(epubDateNode) & !is.null(epubDateNode)){
+    if(length(epubDateNode) > 0 & !is.na(epubDateNode) & !is.null(epubDateNode)){
       publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
                                ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
 
@@ -263,7 +263,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       }))
     }
 
-    if(!is.na(authors[[1]]) & length(authors) > 0) {
+    if(length(authors) > 0 & !is.na(authors[[1]])) {
       authors <- paste(authors, collapse = ", ")
       affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
 
@@ -278,7 +278,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
         }))
       }
 
-      if(!is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
+      if(length(correspondingAuthors) > 0 & !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
 
       affiliations <- XML::xpathApply(article,  "//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
@@ -294,7 +294,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       }
 
       affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue)),collapse = ""))
-      if(is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
+      if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
       return(cbind(pmid,journal, journalLocation, publicationDate, authors
                    , correspondingAuthors, affiliations, correspondingAuthorAffs))
     } else {cbind(pmid,journal, journalLocation, publicationDate, NA, NA, NA, NA)
