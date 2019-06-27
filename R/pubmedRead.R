@@ -240,10 +240,18 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     article <- XML::xmlDoc(x)
     pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")
     journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-title")
-    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher-loc")
+    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
-    publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
-                             ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
+    if(!is.null(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year"))){
+      publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
+                               ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
+
+    }else{
+      publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
+                               ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
+
+
+    }
 
     authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
     if(is.null(authorsNode)) {
