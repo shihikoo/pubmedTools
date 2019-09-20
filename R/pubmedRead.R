@@ -1,5 +1,3 @@
-# ----- Functions ----------
-
 #' GetBaselink
 #'
 #' @param db a string of characters, valid database name from NCBI: https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.chapter2_table1
@@ -243,7 +241,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
     epubDateNode <- RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
-    if(length(epubDateNode) > 0 & !is.na(epubDateNode) & !is.null(epubDateNode)){
+    if(!is.null(epubDateNode) && length(epubDateNode) > 0 && !is.na(epubDateNode) & !is.null(epubDateNode)){
       publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
                                ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
 
@@ -263,12 +261,12 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       }))
     }
 
-    if(length(authors) > 0 & !is.na(authors[[1]])) {
+    if(!is.null(authors) && length(authors) > 0 && !is.na(authors)) {
       authors <- paste(authors, collapse = ", ")
       affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
 
       correspondingAuthorsNode <-  XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name")
-      if(is.null(correspondingAuthorsNode)) {
+      if(is.null(correspondingAuthorsNode) | length(correspondingAuthorsNode) == 0) {
         correspondingAuthors <- authors
       } else{
         correspondingAuthors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor){
@@ -278,7 +276,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
         }))
       }
 
-      if(length(correspondingAuthors) > 0 & !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
+      if(!is.null(correspondingAuthors) && length(correspondingAuthors) > 0 && !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
 
       affiliations <- XML::xpathApply(article,  "//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
