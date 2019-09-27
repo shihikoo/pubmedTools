@@ -262,8 +262,8 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
     }
 
     if(!is.null(authors) && length(authors) > 0 && !is.na(authors)) {
-      authors <- paste(authors, collapse = ", ")
-      affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "||")
+      authors <- paste(authors, collapse = "; ")
+      # affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "; ")
 
       correspondingAuthorsNode <-  XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name")
       if(is.null(correspondingAuthorsNode) | length(correspondingAuthorsNode) == 0) {
@@ -276,7 +276,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
         }))
       }
 
-      if(!is.null(correspondingAuthors) && length(correspondingAuthors) > 0 && !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = ", ")
+      if(!is.null(correspondingAuthors) && length(correspondingAuthors) > 0 && !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = "; ")
 
       affiliations <- XML::xpathApply(article,  "//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
@@ -392,10 +392,10 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
       lastname <- XML::xmlValue(subnode[["LastName"]])
       return(paste(forename, lastname))
     }))
-    authors <- paste(authors, collapse = ", ")
-    affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "||")
+    authors <- paste(authors, collapse = "; ")
+    affiliations <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "; ")
 
-    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliation))
+    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliations))
   }))
 
   return( as.data.frame(results, stringsAsFactors = F))
