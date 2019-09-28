@@ -228,7 +228,7 @@ DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples  doc <- GetXmlDocFromIds(c("4804230", "5575286"), "pmc", "efetch", "", "", 0)
+#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
 #' @import XML
@@ -279,19 +279,21 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       if(!is.null(correspondingAuthors) && length(correspondingAuthors) > 0 && !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = "; ")
 
       affiliations <- XML::xpathApply(article,  "//aff")
-      correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref")
+      correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']")
       if(is.null(correspondingAuthorAffIdsNode)) {
         correspondingAuthorAffIds <- NA
         correspondingAuthorAffs <- NA
       } else {
-        correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref", function(corrAuthorAff){
-          affid <- as.numeric(XML::xmlValue(corrAuthorAff))
+        correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff){
+          # affid <- as.numeric(XML::xmlValue(corrAuthorAff))
+          affid <- as.numeric(gsub("Aff","",xmlAttrs(corrAuthorAff)["rid"]))
+          # affid <- as.numeric(XML::xmlAttrs (corrAuthorAff))
           return(affid)
         })))
         correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue),collapse = "; ")
       }
 
-      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue)),collapse = "; "))
+      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F)),collapse = "; "))
       if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
       return(cbind(pmid,journal, journalLocation, publicationDate, authors
                    , correspondingAuthors, affiliations, correspondingAuthorAffs))
