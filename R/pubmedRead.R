@@ -290,10 +290,10 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
           # affid <- as.numeric(XML::xmlAttrs (corrAuthorAff))
           return(affid)
         })))
-        correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue,recursive=F),collapse = "; ")
+        correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue,recursive=F, trim=T),collapse = "; ")
       }
 
-      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F)),collapse = "; "))
+      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F, trim=T)),collapse = "; "))
       if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
       return(cbind(pmid,journal, journalLocation, publicationDate, authors
                    , correspondingAuthors, affiliations, correspondingAuthorAffs))
