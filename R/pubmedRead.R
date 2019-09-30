@@ -231,6 +231,9 @@ DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=
 #' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
+#' doc <- GetXmlDocFromIds(c("2823164"), "pmc", "efetch", "", "", 0)
+#' ReadMetaDataFromPmcidEfetchDoc(doc)
+#'
 #' @import XML
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc){
@@ -280,7 +283,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
 
       affiliations <- XML::xpathApply(article,  "//aff")
       correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']")
-      if(is.null(correspondingAuthorAffIdsNode)) {
+      if(is.null(correspondingAuthorAffIdsNode) || length(correspondingAuthorAffIdsNode) == 0) {
         correspondingAuthorAffIds <- NA
         correspondingAuthorAffs <- NA
       } else {
@@ -295,7 +298,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
           nodes <- XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))
           if(length(nodes) > 0) return(XML::xmlValue(nodes[[1]], recursive=F, trim=T))
           else return("")
-        }),collapse = "; ")
+        }), collapse = "; ")
 
 if(correspondingAuthorAffs == ""){
   newCorrespondingAuthorAffIds <- unlist(strsplit(correspondingAuthorAffIds, " "))
@@ -307,7 +310,10 @@ if(correspondingAuthorAffs == ""){
   }),collapse = "; ")
 }
 }
-      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F, trim=T)),collapse = "; "))
+      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, function(x){
+        return(gsub("^[0-9]+","",XML::xmlValue(x, trim=T)))
+      } ),collapse = "; ")))
+
       if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
       return(cbind(pmid,journal, journalLocation, publicationDate, authors
                    , correspondingAuthors, affiliations, correspondingAuthorAffs))
