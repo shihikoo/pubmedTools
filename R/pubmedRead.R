@@ -292,12 +292,21 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
         })))
         correspondingAuthorAffs <- paste0(sapply(correspondingAuthorAffIds, function(x){
           # print(paste0("//aff[@id='", x,"']"))
-          XML::xmlValue(XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))[[1]], recursive=F, trim=T)
+          nodes <- XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))
+          if(length(nodes) > 0) return(XML::xmlValue(nodes[[1]], recursive=F, trim=T))
+          else return("")
         }),collapse = "; ")
 
-        # correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue,recursive=F, trim=T),collapse = "; ")
-      }
-
+if(correspondingAuthorAffs == ""){
+  newCorrespondingAuthorAffIds <- unlist(strsplit(correspondingAuthorAffIds, " "))
+  correspondingAuthorAffs <- paste0(sapply(newCorrespondingAuthorAffIds, function(x){
+    # print(paste0("//aff[@id='", x,"']"))
+    nodes <- XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))
+    if(length(nodes) > 0) return(gsub("^[0-9]+","",XML::xmlValue(nodes[[1]], trim=T)))
+    else return("")
+  }),collapse = "; ")
+}
+}
       affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F, trim=T)),collapse = "; "))
       if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
       return(cbind(pmid,journal, journalLocation, publicationDate, authors
