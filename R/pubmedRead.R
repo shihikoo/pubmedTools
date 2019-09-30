@@ -286,11 +286,16 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc){
       } else {
         correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff){
           # affid <- as.numeric(XML::xmlValue(corrAuthorAff))
-          affid <- as.numeric(gsub("Aff","",xmlAttrs(corrAuthorAff)["rid"]))
-          # affid <- as.numeric(XML::xmlAttrs (corrAuthorAff))
+          # affid <- as.numeric(gsub("Aff","",xmlAttrs(corrAuthorAff)["rid"]))
+          affid <- XML::xmlAttrs(corrAuthorAff)["rid"]
           return(affid)
         })))
-        correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue,recursive=F, trim=T),collapse = "; ")
+        correspondingAuthorAffs <- paste0(sapply(correspondingAuthorAffIds, function(x){
+          # print(paste0("//aff[@id='", x,"']"))
+          XML::xmlValue(XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))[[1]], recursive=F, trim=T)
+        }),collapse = "; ")
+
+        # correspondingAuthorAffs <- paste0(sapply(affiliations[correspondingAuthorAffIds], XML::xmlValue,recursive=F, trim=T),collapse = "; ")
       }
 
       affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, XML::xmlValue,recursive=F, trim=T)),collapse = "; "))
