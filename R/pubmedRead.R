@@ -10,17 +10,31 @@
 #'
 #' @examples links <- GetBaselink("pubmed", "4804230", "","")
 #'
-GetBaselink <- function(db,ids, apiKey = "", email = ""){
-  idsStr <- paste0(ids,collapse = ",")
+GetBaselink <- function(db,
+                        ids,
+                        apiKey = "",
+                        email = "") {
+  idsStr <- paste0(ids, collapse = ",")
   baseUrl <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   links <- data.frame(
-    elink = paste0(baseUrl, "elink.fcgi?dbfrom=",db,"&cmd=llinks&id=",idsStr),
-    efetch = paste0(baseUrl, "efetch.fcgi?db=",db,"&id=",idsStr,"&retmode=xml"),
-    esummary = paste0(baseUrl, "esummary.fcgi?db=",db,"&id=",idsStr),
+    elink = paste0(baseUrl, "elink.fcgi?dbfrom=", db, "&cmd=llinks&id=", idsStr),
+    efetch = paste0(
+      baseUrl,
+      "efetch.fcgi?db=",
+      db,
+      "&id=",
+      idsStr,
+      "&retmode=xml"
+    ),
+    esummary = paste0(baseUrl, "esummary.fcgi?db=", db, "&id=", idsStr),
     stringsAsFactors = F
   )
-  if(apiKey != "") links <- sapply(links, function(x)  paste0(x, "&api_key=", apiKey))
-  if(email != "") links <- sapply(links, function(x)  paste0(x, "&email=", email))
+  if (apiKey != "")
+    links <- sapply(links, function(x)
+      paste0(x, "&api_key=", apiKey))
+  if (email != "")
+    links <- sapply(links, function(x)
+      paste0(x, "&email=", email))
 
   return(links)
 }
@@ -39,15 +53,15 @@ GetBaselink <- function(db,ids, apiKey = "", email = ""){
 #'
 #' @import httr
 #'
-GetContentWithLink <- function(link, waitTime){
+GetContentWithLink <- function(link, waitTime) {
   httr::set_config(httr::config(http_version = 0))
   content = NULL
-  while(is.null(content)){
+  while (is.null(content)) {
     tryCatch({
       Sys.sleep(waitTime)
       r0 <- httr::GET(as.character(link))
       content <- httr::content(r0, "text")
-    }, error=function(e){
+    }, error = function(e) {
       print(e)
     })
   }
@@ -64,9 +78,10 @@ GetContentWithLink <- function(link, waitTime){
 #'
 #' @import XML
 #'
-RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
+RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
   nodes <- XML::xpathApply(doc, nodePosition)
-  if(length(nodes) == 0) return(NA)
+  if (length(nodes) == 0)
+    return(NA)
   results <- sapply(nodes, XML::xmlValue)
   return(results)
 }
@@ -87,12 +102,19 @@ RetriveXmlNodeValuefromDoc <-function(doc, nodePosition){
 #'
 #' @examples GetXmlDocFromIds("5575286", "pmc", "efetch", "", "", 0.3)
 #'
-GetXmlDocFromIds <- function(ids, database, target, apiKey, email, waitTime){
-  links <- GetBaselink(database, ids, apiKey, email)
-  content <- GetContentWithLink(links[target], waitTime)
-  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-  return(doc)
-}
+GetXmlDocFromIds <-
+  function(ids,
+           database,
+           target,
+           apiKey,
+           email,
+           waitTime) {
+    links <- GetBaselink(database, ids, apiKey, email)
+    content <- GetContentWithLink(links[target], waitTime)
+    doc <-
+      XML::xmlTreeParse(content, encoding = "UTF-8", useInternalNodes = TRUE)
+    return(doc)
+  }
 
 #' ReadPmidDoiFromPmcidEsummaryDoc
 #'
@@ -106,14 +128,17 @@ GetXmlDocFromIds <- function(ids, database, target, apiKey, email, waitTime){
 #'
 #' @import XML
 #'
-ReadPmidDoiFromPmcidEsummaryDoc <- function(doc){
-  results <- do.call(rbind, XML::xpathApply(doc, "//DocSum", function(x)
-  {
-    node <- XML::xmlDoc(x)
-    pmid <- RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='pmid']")
-    doi <- RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='doi']")
-    return(cbind(pmid, doi))
-  }))
+ReadPmidDoiFromPmcidEsummaryDoc <- function(doc) {
+  results <-
+    do.call(rbind, XML::xpathApply(doc, "//DocSum", function(x)
+    {
+      node <- XML::xmlDoc(x)
+      pmid <-
+        RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='pmid']")
+      doi <-
+        RetriveXmlNodeValuefromDoc(node,  "//Item[@Name='ArticleIds']//Item[@Name='doi']")
+      return(cbind(pmid, doi))
+    }))
   return(as.data.frame(results, stringsAsFactors = F))
 }
 
@@ -132,12 +157,19 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc){
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName=""){
-  doc <- GetXmlDocFromIds(pmcid, "pmc", "esummary", apiKey, email, waitTime)
-  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
-  result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
-  return(result)
-}
+GetPmidDoiFromPmcid <-
+  function(pmcid,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3,
+           writeFileName = "") {
+    doc <-
+      GetXmlDocFromIds(pmcid, "pmc", "esummary", apiKey, email, waitTime)
+    if (writeFileName != "")
+      XML::saveXML(doc, file = writeFileName)
+    result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
+    return(result)
+  }
 
 #' GetPmidDoiFromPmcidBatch
 #'
@@ -153,19 +185,25 @@ GetPmidDoiFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeF
 #'
 #' @import XML
 #'
-GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime = 0){
-  nids <- length(pmcids)
-  grid <- 500
-  nloop <- ceiling(nids/grid)
-  results <- as.data.frame(matrix(nrow = nids, ncol = 3))
-  colnames(results) <- c("pmcid", "pmid", "doi")
-  for(iloop in 1:nloop){
-    iindex <- (((iloop-1)*grid)+1) : ifelse(iloop*grid > nids, nids,iloop*grid)
-    results[iindex,1] <- pmcids[iindex]
-    results[iindex,2:3] <- GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
+GetPmidDoiFromPmcidBatch <-
+  function(pmcids,
+           apiKey = "",
+           email = "",
+           waitTime = 0) {
+    nids <- length(pmcids)
+    grid <- 500
+    nloop <- ceiling(nids / grid)
+    results <- as.data.frame(matrix(nrow = nids, ncol = 3))
+    colnames(results) <- c("pmcid", "pmid", "doi")
+    for (iloop in 1:nloop) {
+      iindex <-
+        (((iloop - 1) * grid) + 1):ifelse(iloop * grid > nids, nids, iloop * grid)
+      results[iindex, 1] <- pmcids[iindex]
+      results[iindex, 2:3] <-
+        GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email, waitTime)
+    }
+    return(results)
   }
-  return(results)
-}
 
 #' DownloadMetaDataWithPmcidsBatch
 #'
@@ -182,17 +220,31 @@ GetPmidDoiFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime = 0){
 #'
 #' @import XML
 #'
-DownloadMetaDataWithPmcidsBatch <- function(pmcids, apiKey="", email="", waitTime=0, fileBaseName=""){
-  nids <- length(pmcids)
-  grid <- 500
-  nloop <- ceiling(nids/grid)
-  for(iloop in 1:nloop){
-    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
-    doc <- GetXmlDocFromIds(pmcids[iindex], "pmc", "efetch", apiKey, email, waitTime)
-    outputFile <- XML::saveXML(doc, file = paste0(gsub("[.]xml","", fileBaseName), min(iindex),"_", max(iindex), ".xml"))
+DownloadMetaDataWithPmcidsBatch <-
+  function(pmcids,
+           apiKey = "",
+           email = "",
+           waitTime = 0,
+           fileBaseName = "") {
+    nids <- length(pmcids)
+    grid <- 500
+    nloop <- ceiling(nids / grid)
+    for (iloop in 1:nloop) {
+      iindex <-
+        ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+      doc <-
+        GetXmlDocFromIds(pmcids[iindex], "pmc", "efetch", apiKey, email, waitTime)
+      outputFile <-
+        XML::saveXML(doc, file = paste0(
+          gsub("[.]xml", "", fileBaseName),
+          min(iindex),
+          "_",
+          max(iindex),
+          ".xml"
+        ))
+    }
+    return(nloop)
   }
-  return(nloop)
-}
 
 #' DownloadMetaDataWithPmidsBatch
 #'
@@ -209,17 +261,31 @@ DownloadMetaDataWithPmcidsBatch <- function(pmcids, apiKey="", email="", waitTim
 #'
 #' @import XML
 #'
-DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=0, fileBaseName=""){
-  nids <- length(pmids)
-  grid <- 500
-  nloop <- ceiling(nids/grid)
-  for(iloop in 1:nloop){
-    iindex <- ((iloop-1)*grid)+1 : ifelse(iloop*grid > nids, nids,iloop*grid)
-    doc <- GetXmlDocFromIds(pmids[iindex], "pubmed", "efetch", apiKey, email, waitTime)
-    outputFile <- XML::saveXML(doc, file = paste0(gsub("[.]xml","", fileBaseName), min(iindex),"_", max(iindex), ".xml"))
+DownloadMetaDataWithPmidsBatch <-
+  function(pmids,
+           apiKey = "",
+           email = "",
+           waitTime = 0,
+           fileBaseName = "") {
+    nids <- length(pmids)
+    grid <- 500
+    nloop <- ceiling(nids / grid)
+    for (iloop in 1:nloop) {
+      iindex <-
+        ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+      doc <-
+        GetXmlDocFromIds(pmids[iindex], "pubmed", "efetch", apiKey, email, waitTime)
+      outputFile <-
+        XML::saveXML(doc, file = paste0(
+          gsub("[.]xml", "", fileBaseName),
+          min(iindex),
+          "_",
+          max(iindex),
+          ".xml"
+        ))
+    }
+    return(nloop)
   }
-  return(nloop)
-}
 
 #' ReadMetaDataFromPmcidEfetchDoc
 #'
@@ -228,97 +294,169 @@ DownloadMetaDataWithPmidsBatch <- function(pmids, apiKey="", email="", waitTime=
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580"), "pmc", "efetch", "", "", 0)
-#' ReadMetaDataFromPmcidEfetchDoc(doc)
-#'
-#' doc <- GetXmlDocFromIds(c("2823164"), "pmc", "efetch", "", "", 0)
+#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580", "2823164"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
 #' @import XML
 #'
-ReadMetaDataFromPmcidEfetchDoc <- function(doc){
-  results <- do.call(rbind, XML::xpathApply(doc, "//article", function(x){
-    article <- XML::xmlDoc(x)
-    pmid <- RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")
-    journal <- RetriveXmlNodeValuefromDoc(article,  "//journal-title")
-    journalLocation <- RetriveXmlNodeValuefromDoc(article,  "//publisher")
+ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
+  results <-
+    do.call(rbind, XML::xpathApply(doc, "//article", function(x) {
+      article <- XML::xmlDoc(x)
+      pmid <-
+        RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")
+      journal <-
+        RetriveXmlNodeValuefromDoc(article,  "//journal-title")
+      journalLocation <-
+        RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
-    epubDateNode <- RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
-    if(!is.null(epubDateNode) && length(epubDateNode) > 0 && !is.na(epubDateNode) & !is.null(epubDateNode)){
-      publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
-                               ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"), sep="-")
+      epubDateNode <-
+        RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
+      if (!is.null(epubDateNode) &&
+          length(epubDateNode) > 0 &&
+          !is.na(epubDateNode) & !is.null(epubDateNode)) {
+        publicationDate <-
+          paste(
+            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
+            ,
+            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"),
+            sep = "-"
+          )
 
-    }else{
-      publicationDate <- paste(RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
-                               ,RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"), sep="-")
-    }
-
-    authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
-    if(is.null(authorsNode)) {
-      authors = NA
-    } else {
-      authors <- do.call(rbind, XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author){
-        forename <- XML::xmlValue(author[["given-names"]])
-        lastname <- XML::xmlValue(author[["surname"]])
-        return(paste(forename, lastname))
-      }))
-    }
-
-    if(!is.null(authors) && length(authors) > 0 && !is.na(authors)) {
-      authors <- paste(authors, collapse = "; ")
-      # affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "; ")
-
-      correspondingAuthorsNode <-  XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name")
-      if(is.null(correspondingAuthorsNode) | length(correspondingAuthorsNode) == 0) {
-        correspondingAuthors <- authors
       } else{
-        correspondingAuthors <- do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor){
-          forename <- XML::xmlValue(corrAuthor[["given-names"]])
-          lastname <- XML::xmlValue(corrAuthor[["surname"]])
-          return(paste(forename, lastname))
-        }))
+        publicationDate <-
+          paste(
+            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
+            ,
+            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"),
+            sep = "-"
+          )
       }
 
-      if(!is.null(correspondingAuthors) && length(correspondingAuthors) > 0 && !is.na(correspondingAuthors[[1]]))  correspondingAuthors <- paste(correspondingAuthors, collapse = "; ")
-
-      affiliations <- XML::xpathApply(article,  "//aff")
-      correspondingAuthorAffIdsNode <- XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']")
-      if(is.null(correspondingAuthorAffIdsNode) || length(correspondingAuthorAffIdsNode) == 0) {
-        correspondingAuthorAffIds <- NA
-        correspondingAuthorAffs <- NA
+      authorsNode <-
+        XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
+      if (is.null(authorsNode)) {
+        authors = NA
       } else {
-        correspondingAuthorAffIds <- unique(do.call(rbind, XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff){
-          # affid <- as.numeric(XML::xmlValue(corrAuthorAff))
-          # affid <- as.numeric(gsub("Aff","",xmlAttrs(corrAuthorAff)["rid"]))
-          affid <- XML::xmlAttrs(corrAuthorAff)["rid"]
-          return(affid)
-        })))
-        correspondingAuthorAffs <- paste0(sapply(correspondingAuthorAffIds, function(x){
-          # print(paste0("//aff[@id='", x,"']"))
-          nodes <- XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))
-          if(length(nodes) > 0) return(XML::xmlValue(nodes[[1]], recursive=F, trim=T))
-          else return("")
-        }), collapse = "; ")
+        authors <-
+          do.call(
+            rbind,
+            XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author) {
+              forename <- XML::xmlValue(author[["given-names"]])
+              lastname <- XML::xmlValue(author[["surname"]])
+              return(paste(forename, lastname))
+            })
+          )
+      }
 
-if(correspondingAuthorAffs == ""){
-  newCorrespondingAuthorAffIds <- unlist(strsplit(correspondingAuthorAffIds, " "))
-  correspondingAuthorAffs <- paste0(sapply(newCorrespondingAuthorAffIds, function(x){
-    # print(paste0("//aff[@id='", x,"']"))
-    nodes <- XML::xpathApply(article,  paste0("//aff[@id='", x,"']"))
-    if(length(nodes) > 0) return(gsub("^[0-9]+","",XML::xmlValue(nodes[[1]], trim=T)))
-    else return("")
-  }),collapse = "; ")
-}
-}
-      affiliations <- ifelse(is.null(affiliations), NA, paste0(unique(sapply(affiliations, function(x){
-        return(gsub("^[0-9]+","",XML::xmlValue(x, trim=T)))
-      } ),collapse = "; ")))
+      if (!is.null(authors) &&
+          length(authors) > 0 && !is.na(authors)) {
+        authors <- paste(authors, collapse = "; ")
+        # affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "; ")
 
-      if(length(correspondingAuthorAffs) > 0 & is.na(correspondingAuthorAffs[[1]]))correspondingAuthorAffs <- affiliations
-      return(cbind(pmid,journal, journalLocation, publicationDate, authors
-                   , correspondingAuthors, affiliations, correspondingAuthorAffs))
-    } else {cbind(pmid,journal, journalLocation, publicationDate, NA, NA, NA, NA)
-    }}))
+        correspondingAuthorsNode <-
+          XML::xpathApply(article,
+                          "//contrib-group//contrib[@corresp='yes']//name")
+        if (is.null(correspondingAuthorsNode) |
+            length(correspondingAuthorsNode) == 0) {
+          correspondingAuthors <- authors
+        } else{
+          correspondingAuthors <-
+            do.call(
+              rbind,
+              XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor) {
+                forename <- XML::xmlValue(corrAuthor[["given-names"]])
+                lastname <- XML::xmlValue(corrAuthor[["surname"]])
+                return(paste(forename, lastname))
+              })
+            )
+        }
+
+        if (!is.null(correspondingAuthors) &&
+            length(correspondingAuthors) > 0 &&
+            !is.na(correspondingAuthors[[1]]))
+          correspondingAuthors <-
+          paste(correspondingAuthors, collapse = "; ")
+
+        correspondingAuthorAffIdsNode <-
+          XML::xpathApply(
+            article,
+            "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']"
+          )
+        if (is.null(correspondingAuthorAffIdsNode) ||
+            length(correspondingAuthorAffIdsNode) == 0) {
+          correspondingAuthorAffIds <- NA
+          correspondingAuthorAffs <- NA
+        } else {
+          correspondingAuthorAffIds <-
+            unique(do.call(
+              rbind,
+              XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff) XML::xmlAttrs(corrAuthorAff)["rid"])
+            ))
+          correspondingAuthorAffs <-
+            paste(sapply(correspondingAuthorAffIds, function(x) {
+              nodes <-
+                XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+              if (length(nodes) > 0)
+                return(XML::xmlValue(nodes[[1]], recursive = F, trim = T))
+              else
+                return("")
+            }),
+            collapse = "; ")
+
+          if (correspondingAuthorAffs == "") {
+            newCorrespondingAuthorAffIds <-
+              unlist(strsplit(correspondingAuthorAffIds, " "))
+            correspondingAuthorAffs <-
+              paste(sapply(newCorrespondingAuthorAffIds, function(x) {
+                # print(paste0("//aff[@id='", x,"']"))
+                nodes <-
+                  XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+                if (length(nodes) > 0)
+                  return(gsub("^[0-9]+", "", XML::xmlValue(nodes[[1]], trim = T)))
+                else
+                  return("")
+              }),
+              collapse = "; ")
+          }
+        }
+
+        affiliationNodes <- XML::xpathApply(article,  "//aff")
+
+        affiliations <-
+          ifelse(is.null(affiliationNodes), NA, paste(unique(
+            sapply(affiliationNodes, function(x) {
+              return(gsub("^[0-9]+", "", XML::xmlValue(x, trim = T)))
+            })
+          ), collapse = "; "))
+
+        if (length(correspondingAuthorAffs) > 0 &
+            is.na(correspondingAuthorAffs[[1]]))
+          correspondingAuthorAffs <- affiliations
+        return(
+          cbind(
+            pmid,
+            journal,
+            journalLocation,
+            publicationDate,
+            authors
+            ,
+            correspondingAuthors,
+            affiliations,
+            correspondingAuthorAffs
+          )
+        )
+      } else {
+        cbind(pmid,
+              journal,
+              journalLocation,
+              publicationDate,
+              NA,
+              NA,
+              NA,
+              NA)
+      }
+    }))
 
   return(as.data.frame(results, stringsAsFactors = F))
 }
@@ -338,12 +476,19 @@ if(correspondingAuthorAffs == ""){
 #'
 #' @import XML
 #'
-GetMetaDataFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, writeFileName = ""){
-  doc <- GetXmlDocFromIds(pmcid, "pmc", "efetch", apiKey, email, waitTime)
-  if(writeFileName != "") XML::saveXML(doc, file = writeFileName)
-  result <- ReadMetaDataFromPmcidEfetchDoc(doc)
-  return(result)
-}
+GetMetaDataFromPmcid <-
+  function(pmcid,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3,
+           writeFileName = "") {
+    doc <-
+      GetXmlDocFromIds(pmcid, "pmc", "efetch", apiKey, email, waitTime)
+    if (writeFileName != "")
+      XML::saveXML(doc, file = writeFileName)
+    result <- ReadMetaDataFromPmcidEfetchDoc(doc)
+    return(result)
+  }
 
 #' GetMetaDataFromPmcidBatch
 #'
@@ -360,21 +505,33 @@ GetMetaDataFromPmcid <- function(pmcid, apiKey="", email="", waitTime=0.3, write
 #'
 #' @import XML
 #'
-GetMetaDataFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime=0, writeFileName=""){
-  nids <- length(pmcids)
-  grid <- 500
-  nloop <- ceiling(nids/grid)
-  results <- as.data.frame(matrix(nrow = nids, ncol = 9))
-  # colnames(results) <- c("pmcid", "pmid", "doi")
-  for(iloop in 1:nloop){
-    iindex <- (((iloop-1)*grid)+1) : ifelse(iloop*grid > nids, nids,iloop*grid)
-    results[, 1] <- pmcids[iindex]
-    temp <- GetMetaDataFromPmcid(pmcids[iindex], apiKey=apiKey, email=email, writeFileName = writeFileName)
-    results[, -1] <- temp
-    colnames(results) <- c("pmcid",names(temp))
+GetMetaDataFromPmcidBatch <-
+  function(pmcids,
+           apiKey = "",
+           email = "",
+           waitTime = 0,
+           writeFileName = "") {
+    nids <- length(pmcids)
+    grid <- 500
+    nloop <- ceiling(nids / grid)
+    results <- as.data.frame(matrix(nrow = nids, ncol = 9))
+    # colnames(results) <- c("pmcid", "pmid", "doi")
+    for (iloop in 1:nloop) {
+      iindex <-
+        (((iloop - 1) * grid) + 1):ifelse(iloop * grid > nids, nids, iloop * grid)
+      results[, 1] <- pmcids[iindex]
+      temp <-
+        GetMetaDataFromPmcid(
+          pmcids[iindex],
+          apiKey = apiKey,
+          email = email,
+          writeFileName = writeFileName
+        )
+      results[,-1] <- temp
+      colnames(results) <- c("pmcid", names(temp))
+    }
+    return(results)
   }
-  return(results)
-}
 
 #' GetMetaDataFromPmid
 #'
@@ -389,39 +546,59 @@ GetMetaDataFromPmcidBatch <- function(pmcids, apiKey="", email="", waitTime=0, w
 #' @examples  metaData1 <-  GetMetaDataFromPmid(c("28852052", "29041955","31230181"))
 #' @import XML
 #'
-GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
-  GetEfetchContentFromPmid <- function(pmid, apiKey, email, waitTime){
-    links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["efetch"], waitTime)
-    return(content)
+GetMetaDataFromPmid <-
+  function(pmid,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3) {
+    GetEfetchContentFromPmid <- function(pmid, apiKey, email, waitTime) {
+      links <- GetBaselink("pubmed", pmid, apiKey, email)
+      content <- GetContentWithLink(links["efetch"], waitTime)
+      return(content)
+    }
+
+    content <- GetEfetchContentFromPmid(pmid, apiKey, email, waitTime)
+    if (is.null(content)) {
+      return (NULL)
+    }
+
+    doc <-
+      XML::xmlTreeParse(content, encoding = "UTF-8", useInternalNodes = TRUE)
+
+    results <-
+      do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
+        article <- XML::xmlDoc(x)
+        pmid <- RetriveXmlNodeValuefromDoc(article,  "//PMID")
+        journal <-
+          RetriveXmlNodeValuefromDoc(article,  "//Journal//Title")
+        journalCountry <-
+          RetriveXmlNodeValuefromDoc(article,  "//MedlineJournalInfo//Country")
+        publicationYear <-
+          RetriveXmlNodeValuefromDoc(article,  "//JournalIssue//PubDate//Year")
+
+        authors <-
+          do.call(rbind, XML::xpathApply(article, "//Author", function(subnode)
+          {
+            forename <- XML::xmlValue(subnode[["ForeName"]])
+            lastname <- XML::xmlValue(subnode[["LastName"]])
+            return(paste(forename, lastname))
+          }))
+        authors <- paste(authors, collapse = "; ")
+        affiliations <-
+          paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "; ")
+
+        return(cbind(
+          pmid,
+          journal,
+          journalCountry,
+          publicationYear,
+          authors,
+          affiliations
+        ))
+      }))
+
+    return(as.data.frame(results, stringsAsFactors = F))
   }
-
-  content <- GetEfetchContentFromPmid(pmid, apiKey, email, waitTime)
-  if(is.null(content)) {return (NULL)}
-
-  doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-
-  results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x){
-    article <- XML::xmlDoc(x)
-    pmid <- RetriveXmlNodeValuefromDoc(article,  "//PMID")
-    journal <- RetriveXmlNodeValuefromDoc(article,  "//Journal//Title")
-    journalCountry <- RetriveXmlNodeValuefromDoc(article,  "//MedlineJournalInfo//Country")
-    publicationYear <- RetriveXmlNodeValuefromDoc(article,  "//JournalIssue//PubDate//Year")
-
-    authors <- do.call(rbind, XML::xpathApply(article, "//Author", function(subnode)
-    {
-      forename <- XML::xmlValue(subnode[["ForeName"]])
-      lastname <- XML::xmlValue(subnode[["LastName"]])
-      return(paste(forename, lastname))
-    }))
-    authors <- paste(authors, collapse = "; ")
-    affiliations <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "; ")
-
-    return(cbind(pmid,journal, journalCountry,publicationYear, authors,affiliations))
-  }))
-
-  return( as.data.frame(results, stringsAsFactors = F))
-}
 
 #' RetriveMetaDataFromPmids
 #'
@@ -435,10 +612,21 @@ GetMetaDataFromPmid <- function(pmid, apiKey="", email="", waitTime=0.3){
 #'
 #' @examples  metaData <-  RetriveMetaDataFromPmids(c("28852052", "29041955"))
 #'
-RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3){
-  metaDataFromPMIDs <- sapply(pmids, GetMetaDataFromPmid, apiKey = apiKey, email = email, waitTime = waitTime)
-  return(as.data.frame(t(metaDataFromPMIDs)))
-}
+RetriveMetaDataFromPmids <-
+  function(pmids,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3) {
+    metaDataFromPMIDs <-
+      sapply(
+        pmids,
+        GetMetaDataFromPmid,
+        apiKey = apiKey,
+        email = email,
+        waitTime = waitTime
+      )
+    return(as.data.frame(t(metaDataFromPMIDs)))
+  }
 
 #' GetUrlsFromPmid
 #'
@@ -459,38 +647,61 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email="", waitTime=0.3)
 #'
 #' @import XML
 #'
-GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext = TRUE){
-  GetUrlsContentWithPmid <- function(pmid, apiKey, email, waitTime){
-    links <- GetBaselink("pubmed", pmid, apiKey, email)
-    content <- GetContentWithLink(links["elink"], waitTime)
-    return(content)
+GetUrlsFromPmid <-
+  function(pmid,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3,
+           fulltext = TRUE) {
+    GetUrlsContentWithPmid <- function(pmid, apiKey, email, waitTime) {
+      links <- GetBaselink("pubmed", pmid, apiKey, email)
+      content <- GetContentWithLink(links["elink"], waitTime)
+      return(content)
+    }
+    RetriveUrlfromContent <- function(content, category = "All") {
+      doc <-
+        XML::xmlTreeParse(content,
+                          encoding = "UTF-8",
+                          useInternalNodes = TRUE)
+
+      myData <-
+        do.call(rbind, XML::xpathApply(doc, "//ObjUrl", function(node)
+        {
+          url <- XML::xmlValue(node[["Url"]])
+          category <- XML::xmlValue(node[["Category"]])
+          return(as.data.frame(
+            cbind(url, category),
+            stringsAsFactors = F,
+            col.names = c("Url", "Category")
+          ))
+        }))
+      if (category == "All")
+        return(myData)
+
+      index <- which(myData$category == category)
+      if (length(index) > 0)
+        myData <- myData[index,]
+      else
+        return(NULL)
+      return(myData)
+    }
+
+    content <- GetUrlsContentWithPmid(pmid, apiKey, email, waitTime)
+    if (is.null(content)) {
+      return (NULL)
+    }
+
+    if (fulltext == T)
+      category <- "Full Text Sources"
+    else
+      category = "All"
+    urls <- RetriveUrlfromContent(content, category)
+
+    if (is.null(urls))
+      return(NULL)
+
+    return(urls[, "url"])
   }
-  RetriveUrlfromContent <-function(content, category = "All"){
-    doc <- XML::xmlTreeParse(content, encoding="UTF-8", useInternalNodes = TRUE)
-
-    myData <- do.call(rbind, XML::xpathApply(doc, "//ObjUrl", function(node)
-    {
-      url <- XML::xmlValue(node[["Url"]])
-      category <- XML::xmlValue(node[["Category"]])
-      return(as.data.frame(cbind(url, category), stringsAsFactors = F, col.names = c("Url", "Category")))
-    }))
-    if(category == "All") return(myData)
-
-    index <- which(myData$category == category)
-    if(length(index) > 0) myData <- myData[index, ] else return(NULL)
-    return(myData)
-  }
-
-  content <- GetUrlsContentWithPmid(pmid, apiKey, email, waitTime)
-  if(is.null(content)) {return (NULL)}
-
-  if(fulltext == T) category <- "Full Text Sources" else category = "All"
-  urls <- RetriveUrlfromContent(content, category)
-
-  if(is.null(urls)) return(NULL)
-
-  return(urls[,"url"])
-}
 
 #' RetriveUrlsFromPmids
 #'
@@ -508,7 +719,20 @@ GetUrlsFromPmid <- function(pmid, apiKey="", email="", waitTime = 0.3, fulltext 
 #'
 #' @examples  RetriveUrlsFromPmids(c("28852052", "29041955"), "", "", 0.3, TRUE)
 #'
-RetriveUrlsFromPmids <- function(pmids, apiKey="", email="", waitTime=0.3, fulltext = TRUE){
-  urlFromPMIDs <- sapply(pmids, GetUrlsFromPmid, apiKey = apiKey, email = email, waitTime = waitTime, fulltext = fulltext)
-  return(urlFromPMIDs)
-}
+RetriveUrlsFromPmids <-
+  function(pmids,
+           apiKey = "",
+           email = "",
+           waitTime = 0.3,
+           fulltext = TRUE) {
+    urlFromPMIDs <-
+      sapply(
+        pmids,
+        GetUrlsFromPmid,
+        apiKey = apiKey,
+        email = email,
+        waitTime = waitTime,
+        fulltext = fulltext
+      )
+    return(urlFromPMIDs)
+  }
