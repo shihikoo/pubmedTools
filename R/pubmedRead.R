@@ -372,6 +372,15 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
             )
         }
 
+        emails <- paste(
+          do.call(
+            rbind,
+            XML::xpathApply(article,  "//email" , function(metaData) {
+              email <- stringr::str_extract_all(XML::xmlValue(metaData), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T)
+              return(email)
+            })
+          ), collapse = "; ")
+
         if (!is.null(correspondingAuthors) &&
             length(correspondingAuthors) > 0 &&
             !is.na(correspondingAuthors[[1]]))
@@ -439,8 +448,8 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
             journal,
             journalLocation,
             publicationDate,
-            authors
-            ,
+            authors,
+            emails,
             correspondingAuthors,
             affiliations,
             correspondingAuthorAffs
@@ -451,6 +460,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
               journal,
               journalLocation,
               publicationDate,
+              NA,
               NA,
               NA,
               NA,
