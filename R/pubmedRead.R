@@ -314,26 +314,29 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     }
   retriveEpubDate <- function(article){
     epubDateNode <-
-      RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']")
     if (!is.null(epubDateNode) &&
         length(epubDateNode) > 0 &&
         !is.na(epubDateNode) & !is.null(epubDateNode)) {
       publicationDate <-
         paste(
-          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
+          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
           ,
-          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"),
+          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//month"),
           sep = "-"
         )
     } else{
       publicationDate <-
         paste(
-          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
+          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//year")
           ,
-          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"),
+          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//month"),
           sep = "-"
         )
     }
+
+if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
+
     return(publicationDate)
   }
   retriveAffliation <- function(article){paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")}
