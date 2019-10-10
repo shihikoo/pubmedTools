@@ -83,6 +83,7 @@ RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
   if (length(nodes) == 0)
     return(NA)
   results <- sapply(nodes, XML::xmlValue)
+  results[which(results == "NA")] <- NA
   return(results)
 }
 
@@ -294,182 +295,245 @@ DownloadMetaDataWithPmidsBatch <-
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580", "2823164"), "pmc", "efetch", "", "", 0)
+#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580", "2823164","4405051", "5575286"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
 #' @import XML
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
+  retrivePMID <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")  }
+  retriveJournal <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//journal-title")  }
+  retriveJournalLocation <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//publisher")  }
+  retriveEmails <- function(article){ paste0(unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T)), collapse = "; ")}
+  retriveEpubDate <- function(article){
+    epubDateNode <-
+      RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
+    if (!is.null(epubDateNode) &&
+        length(epubDateNode) > 0 &&
+        !is.na(epubDateNode) & !is.null(epubDateNode)) {
+      publicationDate <-
+        paste(
+          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
+          ,
+          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"),
+          sep = "-"
+        )
+    } else{
+      publicationDate <-
+        paste(
+          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
+          ,
+          RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"),
+          sep = "-"
+        )
+    }
+    return(publicationDate)
+  }
+  retriveAffliation <- function(article){paste0(gsub("^[0-9]+", "", na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")}
+  retriveAuthor <- function(article){
+    authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
+    if (is.null(authorsNode)| length(authorsNode) == 0)  return(NA)
+    authors <-
+      do.call(
+        rbind,
+        XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author) {
+          forename <- XML::xmlValue(author[["given-names"]])
+          lastname <- XML::xmlValue(author[["surname"]])
+          return(paste(na.omit(forename), na.omit(lastname)))
+        })
+      )
+
+    authors <- paste0(na.omit( unique(authors)), collapse = "; ")
+    if(authors == "") return(NA)
+    return(authors)
+  }
+  retriveCorrespondindAuthorAffliation <- function(article,  correspondingAuthorAffIds){
+    correspondingAuthorAffs <-
+      paste(na.omit(sapply(correspondingAuthorAffIds, function(x) {
+        node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+
+        if(length(node) > 0 ) node <- node[[1]] else return(NA)
+
+        childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
+        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
+        if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
+      })),
+      collapse = "; ")
+
+    return(correspondingAuthorAffs)
+  }
+  retriveCorrespondingAuthor <- function(article){
+    correspondingAuthorsNode1 <- XML::xpathApply(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
+    correspondingAuthorsNode2 <- XML::xpathApply(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
+    if (!is.null(correspondingAuthorsNode1) && length(correspondingAuthorsNode1) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode1, function(x)x)
+    if (!is.null(correspondingAuthorsNode2) && length(correspondingAuthorsNode2) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode2, XML::xmlParent)
+
+    correspondingAuthorsList <- lapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
+      name <- paste(na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["given-names"]])), na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["surname"]])))
+
+      affNodes <- XML::xmlElementsByTagName(correspondingAuthorsParentNode, "xref", recursive = F)
+      if(length(affNodes) == 0)  return(c(name = name, affIds = NA))
+
+      index <-sapply(affNodes, function(x)  XML::xmlAttrs(x)["ref-type"] == "aff")
+      if(length(index) == 0)  return(c(name = name, affIds = NA))
+
+      affNodes <- affNodes[index]
+      affIds <- lapply(affNodes,  function(y) XML::xmlAttrs(y)["rid"])
+
+      return(c(name = name, affIds = affIds))
+    })
+
+    corespondingAuthors <- paste0(unique(sapply(correspondingAuthorsList, function(x) x["name"])), collapse = "; ")
+
+    corespondingAuthorAffIds <- unique(unlist(sapply(correspondingAuthorsList, function(x) x[grep("affIds", names(x))])))
+
+    return(list(name = corespondingAuthors, affIds = corespondingAuthorAffIds))
+  }
+
   results <-
     do.call(rbind, XML::xpathApply(doc, "//article", function(x) {
       article <- XML::xmlDoc(x)
-      pmid <-
-        RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")
-      journal <-
-        RetriveXmlNodeValuefromDoc(article,  "//journal-title")
-      journalLocation <-
-        RetriveXmlNodeValuefromDoc(article,  "//publisher")
 
-      epubDateNode <-
-        RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
-      if (!is.null(epubDateNode) &&
-          length(epubDateNode) > 0 &&
-          !is.na(epubDateNode) & !is.null(epubDateNode)) {
-        publicationDate <-
-          paste(
-            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//year")
-            ,
-            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']//month"),
-            sep = "-"
-          )
+      pmid <- retrivePMID (article)
+      journal <- retriveJournal(article)
+      journalLocation <-retriveJournalLocation(article)
+      publicationDate <-retriveEpubDate(article)
+      authors <- retriveAuthor(article)
+      emails <-retriveEmails(article)
+      affiliations <- retriveAffliation(article)
+      temp <- retriveCorrespondingAuthor(article)
+      correspondingAuthors <- temp["name"]
+      correspondingAuthorAffIds <- temp["affIds"]
 
-      } else{
-        publicationDate <-
-          paste(
-            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//year")
-            ,
-            RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='ppub']//month"),
-            sep = "-"
-          )
-      }
+      if (is.na(correspondingAuthors) | length(correspondingAuthors) == 0 ) correspondingAuthors <- authors
+      if (is.na(correspondingAuthorAffIds) | length(correspondingAuthorAffIds) == 0 ) correspondingAuthorAffs <- affiliations else correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
+      if (correspondingAuthorAffs == "" ) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,unlist(strsplit(temp["affIds"], " ")))
 
-      authorsNode <-
-        XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
-      if (is.null(authorsNode)) {
-        authors = NA
-      } else {
-        authors <-
-          do.call(
-            rbind,
-            XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author) {
-              forename <- XML::xmlValue(author[["given-names"]])
-              lastname <- XML::xmlValue(author[["surname"]])
-              return(paste(forename, lastname))
-            })
-          )
-      }
+      # if (is.null(correspondingAuthors) | length(correspondingAuthors) == 0 | is.na(correspondingAuthors[[1]]))correspondingAuthors <- authors
+      # if (is.null(correspondingAuthorAffs) | length(correspondingAuthorAffs) == 0 | is.na(correspondingAuthorAffs[[1]])) correspondingAuthorAffs <- affiliations
 
-      if (!is.null(authors) &&
-          length(authors) > 0 && !is.na(authors)) {
-        authors <- paste(authors, collapse = "; ")
-        # affiliation <- paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//aff")), collapse = "; ")
-
-        correspondingAuthorsNode <-
-          XML::xpathApply(article,
-                          "//contrib-group//contrib[@corresp='yes']//name")
-        if (is.null(correspondingAuthorsNode) |
-            length(correspondingAuthorsNode) == 0) {
-          correspondingAuthors <- authors
-        } else{
-          correspondingAuthors <-
-            do.call(
-              rbind,
-              XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor) {
-                forename <- XML::xmlValue(corrAuthor[["given-names"]])
-                lastname <- XML::xmlValue(corrAuthor[["surname"]])
-                return(paste(forename, lastname))
-              })
-            )
-        }
-
-        emails <- paste(
-          do.call(
-            rbind,
-            XML::xpathApply(article,  "//email" , function(metaData) {
-              email <- stringr::str_extract_all(XML::xmlValue(metaData), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T)
-              return(email)
-            })
-          ), collapse = "; ")
-
-        if (!is.null(correspondingAuthors) &&
-            length(correspondingAuthors) > 0 &&
-            !is.na(correspondingAuthors[[1]]))
-          correspondingAuthors <-
-          paste(correspondingAuthors, collapse = "; ")
-
-        correspondingAuthorAffIdsNode <-
-          XML::xpathApply(
-            article,
-            "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']"
-          )
-        if (is.null(correspondingAuthorAffIdsNode) ||
-            length(correspondingAuthorAffIdsNode) == 0) {
-          correspondingAuthorAffIds <- NA
-          correspondingAuthorAffs <- NA
-        } else {
-          correspondingAuthorAffIds <-
-            unique(do.call(
-              rbind,
-              XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff) XML::xmlAttrs(corrAuthorAff)["rid"])
-            ))
-          correspondingAuthorAffs <-
-            paste(sapply(correspondingAuthorAffIds, function(x) {
-              nodes <-
-                XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
-              if (length(nodes) > 0)
-                return(XML::xmlValue(nodes[[1]], recursive = F, trim = T))
-              else
-                return("")
-            }),
-            collapse = "; ")
-
-          if (correspondingAuthorAffs == "") {
-            newCorrespondingAuthorAffIds <-
-              unlist(strsplit(correspondingAuthorAffIds, " "))
-            correspondingAuthorAffs <-
-              paste(sapply(newCorrespondingAuthorAffIds, function(x) {
-                # print(paste0("//aff[@id='", x,"']"))
-                nodes <-
-                  XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
-                if (length(nodes) > 0)
-                  return(gsub("^[0-9]+", "", XML::xmlValue(nodes[[1]], trim = T)))
-                else
-                  return("")
-              }),
-              collapse = "; ")
-          }
-        }
-
-        affiliationNodes <- XML::xpathApply(article,  "//aff")
-
-        affiliations <-
-          ifelse(is.null(affiliationNodes), NA, paste(unique(
-            sapply(affiliationNodes, function(x) {
-              return(gsub("^[0-9]+", "", XML::xmlValue(x, trim = T)))
-            })
-          ), collapse = "; "))
-
-        if (length(correspondingAuthorAffs) > 0 &
-            is.na(correspondingAuthorAffs[[1]]))
-          correspondingAuthorAffs <- affiliations
-        return(
-          cbind(
-            pmid,
-            journal,
-            journalLocation,
-            publicationDate,
-            authors,
-            emails,
-            correspondingAuthors,
-            affiliations,
-            correspondingAuthorAffs
-          )
-        )
-      } else {
-        cbind(pmid,
-              journal,
-              journalLocation,
-              publicationDate,
-              NA,
-              NA,
-              NA,
-              NA,
-              NA)
-      }
+      return(cbind(
+        pmid,
+        journal,
+        journalLocation,
+        publicationDate,
+        authors,
+        emails,
+        affiliations,
+        correspondingAuthors,
+        correspondingAuthorAffs)
+      )
     }))
-
-  return(as.data.frame(results, stringsAsFactors = F))
 }
+
+# results <-
+#   do.call(rbind, XML::xpathApply(doc, "//article", function(x) {
+#     article <- XML::xmlDoc(x)
+#
+#     pmid <- retrivePMID (article)
+#     journal <- retriveJournal(article)
+#     journalLocation <-retriveJournalLocation(article)
+#     publicationDate <-retriveEpubDate(article)
+#     authors <- retriveAuthor(article)
+#     emails <-retriveEmails(article)
+#
+#     if (!is.null(authors) && length(authors) > 0 && !is.na(authors)) {
+#
+#       correspondingAuthorsNode <-
+#         XML::xpathApply(article,
+#                         "//contrib-group//contrib[@corresp='yes']//name")
+#       if (is.null(correspondingAuthorsNode) |
+#           length(correspondingAuthorsNode) == 0) {
+#         correspondingAuthors <- authors
+#       } else{
+#         correspondingAuthors <-
+#           do.call(
+#             rbind,
+#             XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//name" , function(corrAuthor) {
+#               forename <- XML::xmlValue(corrAuthor[["given-names"]])
+#               lastname <- XML::xmlValue(corrAuthor[["surname"]])
+#               return(paste(forename, lastname))
+#             })
+#           )
+#       }
+#
+#       if (!is.null(correspondingAuthors) &&
+#           length(correspondingAuthors) > 0 &&
+#           !is.na(correspondingAuthors[[1]]))
+#         correspondingAuthors <-
+#         paste(correspondingAuthors, collapse = "; ")
+#
+#       correspondingAuthorAffIdsNode <-
+#         XML::xpathApply(
+#           article,
+#           "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']"
+#         )
+#       if (is.null(correspondingAuthorAffIdsNode) ||
+#           length(correspondingAuthorAffIdsNode) == 0) {
+#         correspondingAuthorAffIds <- NA
+#         correspondingAuthorAffs <- NA
+#       } else {
+#         correspondingAuthorAffIds <-
+#           unique(do.call(
+#             rbind,
+#             XML::xpathApply(article,  "//contrib-group//contrib[@corresp='yes']//xref[@ref-type='aff']", function(corrAuthorAff) XML::xmlAttrs(corrAuthorAff)["rid"])
+#           ))
+#         correspondingAuthorAffs <-
+#           paste(sapply(correspondingAuthorAffIds, function(x) {
+#             nodes <-
+#               XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+#             if (length(nodes) > 0)
+#               return(XML::xmlValue(nodes[[1]], recursive = F, trim = F))
+#             else
+#               return("")
+#           }),
+#           collapse = "; ")
+#
+#         if (correspondingAuthorAffs == "") {
+#           newCorrespondingAuthorAffIds <-
+#             unlist(strsplit(correspondingAuthorAffIds, " "))
+#           correspondingAuthorAffs <-
+#             paste(sapply(newCorrespondingAuthorAffIds, function(x) {
+#               nodes <-
+#                 XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+#               if (length(nodes) > 0)
+#                 return(gsub("^[0-9]+", "", XML::xmlValue(nodes[[1]], trim = F)))
+#               else
+#                 return("")
+#             }),
+#             collapse = "; ")
+#         }
+#       }
+#
+#       if (length(correspondingAuthorAffs) > 0 &
+#           is.na(correspondingAuthorAffs[[1]]))
+#         correspondingAuthorAffs <- affiliations
+#       return(
+#         cbind(
+#           pmid,
+#           journal,
+#           journalLocation,
+#           publicationDate,
+#           authors,
+#           emails,
+#           correspondingAuthors,
+#           affiliations,
+#           correspondingAuthorAffs
+#         )
+#       )
+#     } else {
+#       cbind(pmid,
+#             journal,
+#             journalLocation,
+#             publicationDate,
+#             NA,
+#             NA,
+#             NA,
+#             NA,
+#             NA)
+#     }
+#   }))
+# return(as.data.frame(results, stringsAsFactors = F))
 
 #' GetMetaDataFromPmcid
 #'
