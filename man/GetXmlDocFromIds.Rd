@@ -4,7 +4,8 @@
 \alias{GetXmlDocFromIds}
 \title{GetXmlDocFromIds}
 \usage{
-GetXmlDocFromIds(ids, database, target, apiKey, email, waitTime)
+GetXmlDocFromIds(ids, database, target, apiKey = "", email = "",
+  waitTime = "")
 }
 \arguments{
 \item{ids}{a string of chacters. Valid NCBI ids}

@@ -107,9 +107,9 @@ GetXmlDocFromIds <-
   function(ids,
            database,
            target,
-           apiKey,
-           email,
-           waitTime) {
+           apiKey = "",
+           email = "",
+           waitTime = "") {
     links <- GetBaselink(database, ids, apiKey, email)
     content <- GetContentWithLink(links[target], waitTime)
     doc <-
@@ -295,16 +295,23 @@ DownloadMetaDataWithPmidsBatch <-
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples  doc <- GetXmlDocFromIds(c("3324826", "3339580", "2823164","4405051", "5575286"), "pmc", "efetch", "", "", 0)
+#' @examples  doc <- GetXmlDocFromIds(c("2823164", "3324826", "3339580"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
-#' @import XML
+#' doc <- GetXmlDocFromIds(c("5575286","4405051","4804230"), "pmc", "efetch", "", "", 0)
+#' ReadMetaDataFromPmcidEfetchDoc(doc)
+#'
+#' @import XML stringr stats
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
   retrivePMID <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']")  }
   retriveJournal <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//journal-title")  }
   retriveJournalLocation <- function(article){ RetriveXmlNodeValuefromDoc(article,  "//publisher")  }
-  retriveEmails <- function(article){ paste0(unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T)), collapse = "; ")}
+  retriveEmails <- function(article){
+    emails <- paste0(stats::na.omit(unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))), collapse = "; ")
+    if(length(emails) == 0 || emails == "") emails <- NA
+    return(emails)
+    }
   retriveEpubDate <- function(article){
     epubDateNode <-
       RetriveXmlNodeValuefromDoc(article,  "//pub-date[@pub-type='epub']")
@@ -329,7 +336,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     }
     return(publicationDate)
   }
-  retriveAffliation <- function(article){paste0(gsub("^[0-9]+", "", na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")}
+  retriveAffliation <- function(article){paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")}
   retriveAuthor <- function(article){
     authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
     if (is.null(authorsNode)| length(authorsNode) == 0)  return(NA)
@@ -339,17 +346,18 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
         XML::xpathApply(article,  "//contrib[@contrib-type='author']//name", function(author) {
           forename <- XML::xmlValue(author[["given-names"]])
           lastname <- XML::xmlValue(author[["surname"]])
-          return(paste(na.omit(forename), na.omit(lastname)))
+          return(paste(stats::na.omit(forename), stats::na.omit(lastname)))
         })
       )
 
-    authors <- paste0(na.omit( unique(authors)), collapse = "; ")
+    authors <- paste0(stats::na.omit( unique(authors)), collapse = "; ")
     if(authors == "") return(NA)
     return(authors)
   }
   retriveCorrespondindAuthorAffliation <- function(article,  correspondingAuthorAffIds){
+    if(is.na(correspondingAuthorAffIds))return(NA)
     correspondingAuthorAffs <-
-      paste(na.omit(sapply(correspondingAuthorAffIds, function(x) {
+      paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
         node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
 
         if(length(node) > 0 ) node <- node[[1]] else return(NA)
@@ -366,10 +374,11 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     correspondingAuthorsNode1 <- XML::xpathApply(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     correspondingAuthorsNode2 <- XML::xpathApply(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
     if (!is.null(correspondingAuthorsNode1) && length(correspondingAuthorsNode1) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode1, function(x)x)
-    if (!is.null(correspondingAuthorsNode2) && length(correspondingAuthorsNode2) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode2, XML::xmlParent)
+    else if (!is.null(correspondingAuthorsNode2) && length(correspondingAuthorsNode2) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode2, XML::xmlParent)
+    else     return(list(name = NA, affIds = NA))
 
     correspondingAuthorsList <- lapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
-      name <- paste(na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["given-names"]])), na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["surname"]])))
+      name <- paste(stats::na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["given-names"]])), stats::na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["surname"]])))
 
       affNodes <- XML::xmlElementsByTagName(correspondingAuthorsParentNode, "xref", recursive = F)
       if(length(affNodes) == 0)  return(c(name = name, affIds = NA))
@@ -384,8 +393,10 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     })
 
     corespondingAuthors <- paste0(unique(sapply(correspondingAuthorsList, function(x) x["name"])), collapse = "; ")
+    if(length(corespondingAuthors) == 0 || is.null(corespondingAuthors) || is.na(corespondingAuthors) || corespondingAuthors == "") corespondingAuthors <- NA
 
     corespondingAuthorAffIds <- unique(unlist(sapply(correspondingAuthorsList, function(x) x[grep("affIds", names(x))])))
+    if(length(corespondingAuthorAffIds) == 0 || is.null(corespondingAuthorAffIds) || is.na(corespondingAuthorAffIds) || corespondingAuthorAffIds == "") corespondingAuthorAffIds <- NA
 
     return(list(name = corespondingAuthors, affIds = corespondingAuthorAffIds))
   }
@@ -404,10 +415,13 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
       temp <- retriveCorrespondingAuthor(article)
       correspondingAuthors <- temp["name"]
       correspondingAuthorAffIds <- temp["affIds"]
+      correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
 
-      if (is.na(correspondingAuthors) | length(correspondingAuthors) == 0 ) correspondingAuthors <- authors
-      if (is.na(correspondingAuthorAffIds) | length(correspondingAuthorAffIds) == 0 ) correspondingAuthorAffs <- affiliations else correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
-      if (correspondingAuthorAffs == "" ) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,unlist(strsplit(temp["affIds"], " ")))
+      if (is.na(correspondingAuthorAffs) && !is.na(correspondingAuthorAffIds) ) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,unlist(strsplit(correspondingAuthorAffIds, " ")))
+
+      if (is.null(correspondingAuthors) || is.na(correspondingAuthors) || length(correspondingAuthors) == 0 ) correspondingAuthors <- authors
+
+      if (is.null(correspondingAuthorAffIds) || is.na(correspondingAuthorAffIds) || length(correspondingAuthorAffIds) == 0 ) correspondingAuthorAffs <- affiliations else correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
 
       # if (is.null(correspondingAuthors) | length(correspondingAuthors) == 0 | is.na(correspondingAuthors[[1]]))correspondingAuthors <- authors
       # if (is.null(correspondingAuthorAffs) | length(correspondingAuthorAffs) == 0 | is.na(correspondingAuthorAffs[[1]])) correspondingAuthorAffs <- affiliations
@@ -424,6 +438,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
         correspondingAuthorAffs)
       )
     }))
+
+  rownames(results) <- NULL
+  return(results)
 }
 
 # results <-
@@ -588,7 +605,7 @@ GetMetaDataFromPmcidBatch <-
     nids <- length(pmcids)
     grid <- 500
     nloop <- ceiling(nids / grid)
-    results <- as.data.frame(matrix(nrow = nids, ncol = 9))
+    results <- as.data.frame(matrix(nrow = nids, ncol = 10, ""), stringsAsFactors = F)
     # colnames(results) <- c("pmcid", "pmid", "doi")
     for (iloop in 1:nloop) {
       iindex <-
@@ -601,9 +618,11 @@ GetMetaDataFromPmcidBatch <-
           email = email,
           writeFileName = writeFileName
         )
+      temp <- as.data.frame(temp, stringsAsFactors = F)
       results[,-1] <- temp
-      colnames(results) <- c("pmcid", names(temp))
     }
+    colnames(results) <- c("pmcid", names(temp))
+
     return(results)
   }
 

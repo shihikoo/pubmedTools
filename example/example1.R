@@ -7,10 +7,10 @@ pmid <- pmids[1]
 pmcids <- c("1033860","5575286", "4804230","102755")
 pmcid <- pmcids[1]
 email <- "shihikoo@gmail.com"
-waitTime <- 0
+waitTime <- 10
 
-options("download.file.method" = "libcurl")
-devtools::install_github("shihikoo/pubmedTools")
+# options("download.file.method" = "libcurl")
+# devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
 
 print(GetPmidDoiFromPmcid(pmcid, apiKey, email, waitTime = 0))
