@@ -298,10 +298,10 @@ DownloadMetaDataWithPmidsBatch <-
 #' @examples  doc <- GetXmlDocFromIds(c("2823164", "3324826", "3339580"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
-#' doc <- GetXmlDocFromIds(c("4812069","4405051","4804230"), "pmc", "efetch", "", "", 0)
+#' doc <- GetXmlDocFromIds(c("4812069","4405051","4804230","3892617"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
-#' doc <- GetXmlDocFromIds(c("3892617"), "pmc", "efetch", "", "", 0)
+#' doc <- GetXmlDocFromIds(c("5304250","4415024"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
 #' @import XML stringr stats
@@ -377,7 +377,6 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
     if(authors == "") return(NA)
     return(authors)
   }
-
   retriveCorrespondingAuthor <- function(article){
     correspondingAuthorsNode1 <- XML::xpathApply(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     correspondingAuthorsNode2 <- XML::xpathApply(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
@@ -411,9 +410,8 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
 
     return(list(name = correspondingAuthors, affIds = corespondingAuthorAffIds))
   }
-
   retriveCorrespondindAuthorAffliation <- function(article,  correspondingAuthorAffIds){
-    if(is.na(correspondingAuthorAffIds)) return(NA)
+    if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
     correspondingAuthorAffs <-
       paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
         node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
@@ -421,6 +419,27 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
         childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
         index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
         if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
+      })),
+      collapse = "; ")
+
+    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
+    return(correspondingAuthorAffs)
+  }
+
+  retriveCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
+    if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
+    nodes <-XML::xpathApply(article,  paste0("//aff"))
+    correspondingAuthorAffs <-
+      paste(stats::na.omit(sapply(nodes, function(node) {
+        childrenNodes <- XML::xmlChildren(node)
+
+        index <- which(sapply(childrenNodes, function(x) {
+          XML::xmlGetAttr(x, "id") %in% correspondingAuthorAffIds
+        }) == T)
+
+        childValues <- sapply(childrenNodes[index+1], XML::xmlValue)
+        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
+        if(length(index) > 0)  return(paste(childValues[index], collapse = "; ")) else return(NA)
       })),
       collapse = "; ")
 
@@ -441,17 +460,15 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
       affiliations <- retriveAffliation(article)
 # There are hierarchy of the existance of the properties
       if(is.na(authors)) temp <- NA else temp <- retriveCorrespondingAuthor(article)
-      if(is.na(temp)){
-        correspondingAuthors <- NA
-        correspondingAuthorAffIds <- NA
-        correspondingAuthorAffs <- NA
-      } else {
         correspondingAuthors <- temp["name"]
         correspondingAuthorAffIds <- temp["affIds"]
 if(is.na(affiliations) || is.na(correspondingAuthorAffIds)) correspondingAuthorAffs <- NA else  correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
-      }
-# if the corresponding author ids exists but correspondingAuthorAffs
+
+# if the corresponding aff ids exists but correspondingAuthorAffs
       if (is.na(correspondingAuthorAffs) && !is.na(correspondingAuthorAffIds) && !is.na(affiliations)) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,strsplit(as.character(correspondingAuthorAffIds), " "))
+
+      if (is.na(correspondingAuthorAffs) && !is.na(correspondingAuthorAffIds) && !is.na(affiliations)) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliationSchema3(article,correspondingAuthorAffIds)
+
 # sometimes, there is no marking on corresponding author because all authors are corresponding author
       if (is.na(correspondingAuthors) && !is.na(authors)) correspondingAuthors <- authors
       if (is.na(correspondingAuthorAffIds) && !is.na(affiliations)) correspondingAuthorAffs <- affiliations
