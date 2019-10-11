@@ -311,8 +311,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
   retriveJournal <- function(article){ unique(RetriveXmlNodeValuefromDoc(article,  "//journal-title"))  }
   retriveJournalLocation <- function(article){ unique(RetriveXmlNodeValuefromDoc(article,  "//publisher"))  }
   retriveEmails <- function(article){
-    emails <- paste0(stats::na.omit(unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))), collapse = "; ")
-    if(length(emails) == 0 || emails == "") emails <- NA
+    emailList <- unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))
+    validIndex <- which(!is.na(emailList) & emailList != "")
+    if(length(validIndex) > 0)    emails <- paste0(emailList[validIndex], collapse = "; ") else emails <- NA
     return(emails)
     }
   retriveEpubDate <- function(article){
@@ -342,7 +343,24 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
 
     return(publicationDate)
   }
-  retriveAffliation <- function(article){paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")}
+  retriveAffliation <- function(article){
+    # paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")
+      nodes <-XML::xpathApply(article,  paste0("//aff"))
+      if(length(nodes) == 0 ) return(NA)
+
+      affList <- sapply(nodes, function(node){
+        childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
+        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
+        if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
+      })
+
+      validIndex <- which(!is.na(affList) & affList != "")
+      if(length(validIndex) > 0)    correspondingAuthorAffs <- paste0(affList[validIndex], collapse = "; ") else correspondingAuthorAffs <- NA
+
+    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
+    return(correspondingAuthorAffs)
+  }
+
   retriveAuthor <- function(article){
     authorsNode <- XML::xpathApply(article,  "//contrib[@contrib-type='author']//name")
     if (is.null(authorsNode)| length(authorsNode) == 0)  return(NA)
@@ -397,9 +415,7 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
     correspondingAuthorAffs <-
       paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
         node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
-
         if(length(node) > 0 ) node <- node[[1]] else return(NA)
-
         childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
         index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
         if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
@@ -422,7 +438,7 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
       emails <-retriveEmails(article)
       affiliations <- retriveAffliation(article)
       temp <- retriveCorrespondingAuthor(article)
-      correspondingAuthors <- temp["name"]
+      if(is.na(authors) || authors == "") correspondingAuthors <- temp["name"]
       correspondingAuthorAffIds <- temp["affIds"]
       correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
 
