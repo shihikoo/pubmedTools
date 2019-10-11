@@ -301,6 +301,9 @@ DownloadMetaDataWithPmidsBatch <-
 #' doc <- GetXmlDocFromIds(c("5575286","4405051","4804230"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
+#' doc <- GetXmlDocFromIds(c("4812069"), "pmc", "efetch", "", "", 0)
+#' ReadMetaDataFromPmcidEfetchDoc(doc)
+#'
 #' @import XML stringr stats
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
@@ -357,22 +360,7 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
     if(authors == "") return(NA)
     return(authors)
   }
-  retriveCorrespondindAuthorAffliation <- function(article,  correspondingAuthorAffIds){
-    if(is.na(correspondingAuthorAffIds))return(NA)
-    correspondingAuthorAffs <-
-      paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
-        node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
 
-        if(length(node) > 0 ) node <- node[[1]] else return(NA)
-
-        childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
-        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
-        if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
-      })),
-      collapse = "; ")
-
-    return(correspondingAuthorAffs)
-  }
   retriveCorrespondingAuthor <- function(article){
     correspondingAuthorsNode1 <- XML::xpathApply(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     correspondingAuthorsNode2 <- XML::xpathApply(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
@@ -404,6 +392,24 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
     return(list(name = corespondingAuthors, affIds = corespondingAuthorAffIds))
   }
 
+  retriveCorrespondindAuthorAffliation <- function(article,  correspondingAuthorAffIds){
+    if(is.na(correspondingAuthorAffIds)) return(NA)
+    correspondingAuthorAffs <-
+      paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
+        node <-XML::xpathApply(article,  paste0("//aff[@id='", x, "']"))
+
+        if(length(node) > 0 ) node <- node[[1]] else return(NA)
+
+        childValues <- sapply(XML::xmlChildren(node), XML::xmlValue)
+        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
+        if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
+      })),
+      collapse = "; ")
+
+    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
+    return(correspondingAuthorAffs)
+  }
+
   results <-
     do.call(rbind, XML::xpathApply(doc, "//article", function(x) {
       article <- XML::xmlDoc(x)
@@ -420,7 +426,7 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
       correspondingAuthorAffIds <- temp["affIds"]
       correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article, correspondingAuthorAffIds)
 
-      if (is.na(correspondingAuthorAffs) && !is.na(correspondingAuthorAffIds) ) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,unlist(strsplit(correspondingAuthorAffIds, " ")))
+      if (is.na(correspondingAuthorAffs) && !is.na(correspondingAuthorAffIds) ) correspondingAuthorAffs <- retriveCorrespondindAuthorAffliation(article,strsplit(as.character(correspondingAuthorAffIds), " "))
 
       if (is.null(correspondingAuthors) || is.na(correspondingAuthors) || length(correspondingAuthors) == 0 ) correspondingAuthors <- authors
 
