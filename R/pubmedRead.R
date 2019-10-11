@@ -376,9 +376,9 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
   retriveCorrespondingAuthor <- function(article){
     correspondingAuthorsNode1 <- XML::xpathApply(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     correspondingAuthorsNode2 <- XML::xpathApply(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
-    if (!is.null(correspondingAuthorsNode1) && length(correspondingAuthorsNode1) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode1, function(x)x)
-    else if (!is.null(correspondingAuthorsNode2) && length(correspondingAuthorsNode2) > 0) correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode2, XML::xmlParent)
-    else     return(list(name = NA, affIds = NA))
+    if (!is.null(correspondingAuthorsNode1) && length(correspondingAuthorsNode1) > 0) {correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode1, function(x)x)
+    } else if (!is.null(correspondingAuthorsNode2) && length(correspondingAuthorsNode2) > 0) {correspondingAuthorsParentNodes <- lapply(correspondingAuthorsNode2, XML::xmlParent)
+    }    else     return(list(name = NA, affIds = NA))
 
     correspondingAuthorsList <- lapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
       name <- paste(stats::na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["given-names"]])), stats::na.omit( XML::xmlValue(correspondingAuthorsParentNode[["name"]][["surname"]])))
@@ -386,7 +386,7 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
       affNodes <- XML::xmlElementsByTagName(correspondingAuthorsParentNode, "xref", recursive = F)
       if(length(affNodes) == 0)  return(c(name = name, affIds = NA))
 
-      index <-sapply(affNodes, function(x)  XML::xmlAttrs(x)["ref-type"] == "aff")
+      index <- which(sapply(affNodes, function(x)  XML::xmlAttrs(x)["ref-type"] == "aff") == T)
       if(length(index) == 0)  return(c(name = name, affIds = NA))
 
       affNodes <- affNodes[index]
