@@ -397,8 +397,8 @@ if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
       affNodes <- affNodes[index]
       affIds <- lapply(affNodes,  function(y) XML::xmlAttrs(y)["rid"])
 
-      if(is.na(name) || is.null(name) || length(name) || name =="")name <- NA
-      if(is.na(affIds) || is.null(affIds) || length(affIds) || affIds =="")affIds <- NA
+      if(is.na(name) || is.null(name) || length(name) ==0 || name =="")name <- NA
+      if(is.na(affIds) || is.null(affIds) || length(affIds) ==0 || affIds =="")affIds <- NA
 
       return(c(name = name, affIds = affIds))
     })
