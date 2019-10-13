@@ -307,9 +307,15 @@ DownloadMetaDataWithPmidsBatch <-
 #' @import XML stringr stats
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
-  retrivePMID <- function(article){ unique(RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']") ) }
-  retriveJournal <- function(article){ unique(RetriveXmlNodeValuefromDoc(article,  "//journal-title"))  }
-  retriveJournalLocation <- function(article){ unique(RetriveXmlNodeValuefromDoc(article,  "//publisher"))  }
+  retrivePMID <- function(article){
+    output <- unique(RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']") )
+    if(length(output) >0 ) return(output[[1]]) else return(output)  }
+  retriveJournal <- function(article){
+    output <- unique(RetriveXmlNodeValuefromDoc(article,  "//journal-title"))
+    if(length(output > 0)) return(output[[1]]) else return(output) }
+  retriveJournalLocation <- function(article){
+    output <- unique(RetriveXmlNodeValuefromDoc(article,  "//publisher"))
+    if(length(output) >0 ) return(output[[1]]) else return(output) }
   retriveEmails <- function(article){
     emailList <- unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))
     validIndex <- which(!is.na(emailList) & emailList != "")
