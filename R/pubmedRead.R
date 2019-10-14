@@ -301,7 +301,7 @@ DownloadMetaDataWithPmidsBatch <-
 #' doc <- GetXmlDocFromIds(c("4812069","4405051","4804230","3892617"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
-#' doc <- GetXmlDocFromIds(c("5304250","4415024"), "pmc", "efetch", "", "", 0)
+#' doc <- GetXmlDocFromIds(c("5304250","4415024","4804230"), "pmc", "efetch", "", "", 0)
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
 #' @import XML stringr stats
@@ -323,29 +323,27 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     return(emails)
     }
   retriveEpubDate <- function(article){
-    epubDateNode <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']")
-    if (!is.null(epubDateNode) &&
-        length(epubDateNode) > 0 &&
-        !is.na(epubDateNode) & !is.null(epubDateNode)) {
-      publicationDate <-
-        paste(
-          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
-          ,
-          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//month"),
-          sep = "-"
-        )
-    } else{
-      publicationDate <-
-        paste(
-          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//year")
-          ,
-          RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//month"),
-          sep = "-"
-        )
-    }
+    epubYear <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
+    epubMonth <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//month")
+    epubDate <- paste(na.omit(c(epubYear[[1]], epubMonth[[1]])), collapse = "-" )
 
-if(length(publicationDate) > 1 ) publicationDate <- publicationDate[[1]]
+    ppubYear <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//year")
+    ppubMonth <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//month")
+    ppubDate <- paste(na.omit(c(ppubYear[[1]], ppubMonth[[1]])), collapse = "-" )
+
+    allYear <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//year")
+    allMonth <-
+      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//month")
+    allDate <- paste(na.omit(c(allYear[[1]], allMonth[[1]])), collapse = "-" )
+
+    if(epubDate != "") publicationDate <- epubDate
+    else if(ppubDate != "") publicationDate <- ppubDate
+    else publicationDate <- allDate
 
     return(publicationDate)
   }
