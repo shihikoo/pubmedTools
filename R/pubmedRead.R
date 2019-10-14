@@ -288,6 +288,45 @@ DownloadMetaDataWithPmidsBatch <-
     return(nloop)
   }
 
+
+#' GetEpubDateFromPmcidEfetchDoc
+#'
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
+#'
+#' @return a string: publicationDate
+#' @export
+#'
+#' @examples doc <- GetXmlDocFromIds(c("5304250","4415024","4804230"), "pmc", "efetch", "", "", 0)
+#' GetEpubDateFromPmcidEfetchDoc(doc)
+#'
+#' @import XML
+#'
+GetEpubDateFromPmcidEfetchDoc <- function(article){
+  epubYear <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
+  epubMonth <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//month")
+  epubDate <- paste(na.omit(c(epubYear[[1]], epubMonth[[1]])), collapse = "-" )
+
+  ppubYear <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//year")
+  ppubMonth <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//month")
+  ppubDate <- paste(na.omit(c(ppubYear[[1]], ppubMonth[[1]])), collapse = "-" )
+
+  allYear <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//year")
+  allMonth <-
+    RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//month")
+  allDate <- paste(na.omit(c(allYear[[1]], allMonth[[1]])), collapse = "-" )
+
+  if(epubDate != "") publicationDate <- epubDate
+  else if(ppubDate != "") publicationDate <- ppubDate
+  else publicationDate <- allDate
+
+  return(publicationDate)
+}
+
 #' ReadMetaDataFromPmcidEfetchDoc
 #'
 #' @param doc a XMLInternalDocument, a XMLAbstractDocument
@@ -322,31 +361,6 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     if(length(validIndex) > 0)    emails <- paste0(emailList[validIndex], collapse = "; ") else emails <- NA
     return(emails)
     }
-  retriveEpubDate <- function(article){
-    epubYear <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
-    epubMonth <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//month")
-    epubDate <- paste(na.omit(c(epubYear[[1]], epubMonth[[1]])), collapse = "-" )
-
-    ppubYear <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//year")
-    ppubMonth <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='ppub']//month")
-    ppubDate <- paste(na.omit(c(ppubYear[[1]], ppubMonth[[1]])), collapse = "-" )
-
-    allYear <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//year")
-    allMonth <-
-      RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date//month")
-    allDate <- paste(na.omit(c(allYear[[1]], allMonth[[1]])), collapse = "-" )
-
-    if(epubDate != "") publicationDate <- epubDate
-    else if(ppubDate != "") publicationDate <- ppubDate
-    else publicationDate <- allDate
-
-    return(publicationDate)
-  }
   retriveAffliation <- function(article){
     # paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")
       nodes <-XML::xpathApply(article,  paste0("//aff"))
@@ -429,7 +443,6 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
     if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
     return(correspondingAuthorAffs)
   }
-
   retriveCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
     if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
     nodes <-XML::xpathApply(article,  paste0("//aff"))
@@ -458,7 +471,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
       pmid <- retrivePMID (article)
       journal <- retriveJournal(article)
       journalLocation <-retriveJournalLocation(article)
-      publicationDate <-retriveEpubDate(article)
+      publicationDate <-GetEpubDateFromPmcidEfetchDoc(article)
       authors <- retriveAuthor(article)
       emails <-retriveEmails(article)
       affiliations <- retriveAffliation(article)

@@ -22,7 +22,7 @@ ReadMetaDataFromPmcidEfetchDoc(doc)
 doc <- GetXmlDocFromIds(c("4812069","4405051","4804230","3892617"), "pmc", "efetch", "", "", 0)
 ReadMetaDataFromPmcidEfetchDoc(doc)
 
-doc <- GetXmlDocFromIds(c("5304250","4415024"), "pmc", "efetch", "", "", 0)
+doc <- GetXmlDocFromIds(c("5304250","4415024","4804230"), "pmc", "efetch", "", "", 0)
 ReadMetaDataFromPmcidEfetchDoc(doc)
 
 }
