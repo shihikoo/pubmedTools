@@ -324,6 +324,11 @@ GetEpubDateFromPmcidEfetchDoc <- function(article){
   else if(ppubDate != "") publicationDate <- ppubDate
   else publicationDate <- allDate
 
+  temp <- gsub("\n", "", publicationDate, fixed = T)
+  temp <- gsub(" ", "", temp, fixed = T)
+  temp <- gsub("^0", "", temp)
+  publicationDate <- temp
+
   return(publicationDate)
 }
 
@@ -358,11 +363,11 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
   retriveEmails <- function(article){
     emailList <- unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))
     validIndex <- which(!is.na(emailList) & emailList != "")
-    if(length(validIndex) > 0)    emails <- paste0(emailList[validIndex], collapse = "; ") else emails <- NA
+    if(length(validIndex) > 0)    emails <- paste0(emailList[validIndex], collapse = "||") else emails <- NA
     return(emails)
     }
   retriveAffliation <- function(article){
-    # paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "; ")
+    # paste0(gsub("^[0-9]+", "", stats::na.omit( unique(RetriveXmlNodeValuefromDoc(article,  "//aff")))), collapse = "||")
       nodes <-XML::xpathApply(article,  paste0("//aff"))
       if(length(nodes) == 0 ) return(NA)
 
@@ -373,7 +378,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
       })
 
       validIndex <- which(!is.na(affList) & affList != "")
-      if(length(validIndex) > 0)    correspondingAuthorAffs <- paste0(affList[validIndex], collapse = "; ") else correspondingAuthorAffs <- NA
+      if(length(validIndex) > 0)    correspondingAuthorAffs <- paste0(affList[validIndex], collapse = "||") else correspondingAuthorAffs <- NA
 
     if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
     return(correspondingAuthorAffs)
@@ -391,7 +396,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
         })
       )
 
-    authors <- paste0(stats::na.omit( unique(authors)), collapse = "; ")
+    authors <- paste0(stats::na.omit( unique(authors)), collapse = "||")
     if(authors == "") return(NA)
     return(authors)
   }
@@ -420,7 +425,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
       return(c(name = name, affIds = affIds))
     })
 
-    correspondingAuthors <- paste0(unique(sapply(correspondingAuthorsList, function(x) x["name"])), collapse = "; ")
+    correspondingAuthors <- paste0(unique(sapply(correspondingAuthorsList, function(x) x["name"])), collapse = "||")
     if(length(correspondingAuthors) == 0 || is.null(correspondingAuthors) || is.na(correspondingAuthors) || correspondingAuthors == "") correspondingAuthors <- NA
 
     corespondingAuthorAffIds <- unique(unlist(sapply(correspondingAuthorsList, function(x) x[grep("affIds", names(x))])))
@@ -438,7 +443,7 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
         index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
         if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
       })),
-      collapse = "; ")
+      collapse = "||")
 
     if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
     return(correspondingAuthorAffs)
@@ -456,9 +461,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
 
         childValues <- sapply(childrenNodes[index+1], XML::xmlValue)
         index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues))
-        if(length(index) > 0)  return(paste(childValues[index], collapse = "; ")) else return(NA)
+        if(length(index) > 0)  return(paste(childValues[index], collapse = "||")) else return(NA)
       })),
-      collapse = "; ")
+      collapse = "||")
 
     if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
     return(correspondingAuthorAffs)
@@ -631,9 +636,9 @@ GetMetaDataFromPmid <-
             lastname <- XML::xmlValue(subnode[["LastName"]])
             return(paste(forename, lastname))
           }))
-        authors <- paste(authors, collapse = "; ")
+        authors <- paste(authors, collapse = "||")
         affiliations <-
-          paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "; ")
+          paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "||")
 
         return(cbind(
           pmid,
