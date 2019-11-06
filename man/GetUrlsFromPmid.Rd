@@ -4,8 +4,7 @@
 \alias{GetUrlsFromPmid}
 \title{GetUrlsFromPmid}
 \usage{
-GetUrlsFromPmid(pmid, apiKey = "", email = "", waitTime = 0.3,
-  fulltext = TRUE)
+GetUrlsFromPmid(pmid, apiKey = "", email = "", fulltext = TRUE)
 }
 \arguments{
 \item{pmid}{a number or a string of characters. The number of pmid.}
@@ -14,18 +13,16 @@ GetUrlsFromPmid(pmid, apiKey = "", email = "", waitTime = 0.3,
 
 \item{email}{a string of characters. Your email address}
 
-\item{waitTime}{a number. Waiting of the program}
-
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
 \value{
-a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
+a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T
 Return NULL if none is found.
 }
 \description{
-Get related full text urls from given pmid
+Get related url links from given pmid
 }
 \examples{
-GetUrlsFromPmid("28852052", "", "",0.3)
+GetUrlsFromPmid("28852052",fulltext = TRUE)
 
 }
