@@ -56,8 +56,11 @@ RetriveJournalFromPmidEfetcXML <-
 
     results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
         journal <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//Journal//Title")
-        return(paste0(journal, collapse = "||"))}
-      ))
+        pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//PMID")
+        return(cbind(
+          pmid,
+          journal
+        ))}))
 
     return(as.data.frame(results, stringsAsFactors = F))
   }
@@ -81,9 +84,12 @@ RetriveFunderFromPmidEfetcXML <-
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey, email = email)
 
     results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
-      funders <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency")
-      return(paste0(funders, collapse = "||"))}
-    ))
+      funders <- paste0(RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency"), collapse = "||")
+      pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//PMID")
+      return(cbind(
+        pmid,
+        funders
+      ))}))
 
     return(as.data.frame(results, stringsAsFactors = F))
   }
@@ -116,15 +122,15 @@ GetMetaDataFromPmid <-
           RetriveXmlNodeValuefromDoc(article,  "//MedlineJournalInfo//Country")
         publicationYear <-
           RetriveXmlNodeValuefromDoc(article,  "//JournalIssue//PubDate//Year")
-
-        authors <-
+        funders <-
+          paste0(RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency"), collapse = "||")
+        authors <-paste(
           do.call(rbind, XML::xpathApply(article, "//Author", function(subnode)
           {
             forename <- XML::xmlValue(subnode[["ForeName"]])
             lastname <- XML::xmlValue(subnode[["LastName"]])
             return(paste(forename, lastname))
-          }))
-        authors <- paste(authors, collapse = "||")
+          })), collapse = "||")
         affiliations <-
           paste0(unique(RetriveXmlNodeValuefromDoc(article,  "//Affiliation")), collapse = "||")
 
@@ -133,6 +139,7 @@ GetMetaDataFromPmid <-
           journal,
           journalCountry,
           publicationYear,
+          funders,
           authors,
           affiliations
         ))
