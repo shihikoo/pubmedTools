@@ -89,7 +89,7 @@ RetriveFunderFromPmidEfetcXML <-
       pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//PMID")
       return(cbind(
         pmid,
-        funders
+        funderStr
       ))}))
 
     return(as.data.frame(results, stringsAsFactors = F))
