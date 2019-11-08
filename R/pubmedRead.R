@@ -84,7 +84,8 @@ RetriveFunderFromPmidEfetcXML <-
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey, email = email)
 
     results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
-      funders <- paste0(RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency"), collapse = "||")
+      funders <- unique(RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency"))
+      funderStr<- paste0(funders, collapse = "||")
       pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//PMID")
       return(cbind(
         pmid,
