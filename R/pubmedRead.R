@@ -86,7 +86,7 @@ RetriveFunderFromPmidEfetcXML <-
     results <- do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
       funders <- unique(RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//GrantList//Grant//Agency"))
       funderStr<- paste0(funders, collapse = "||")
-      pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//PMID")
+      pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//MedlineCitation//PMID")[[1]]
       return(cbind(
         pmid,
         funderStr
@@ -116,7 +116,7 @@ GetMetaDataFromPmid <-
     results <-
       do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
         article <- XML::xmlDoc(x)
-        pmid <- RetriveXmlNodeValuefromDoc(article,  "//PMID")
+        pmid <- RetriveXmlNodeValuefromDoc(XML::xmlDoc(x),  "//MedlineCitation//PMID")[[1]]
         journal <-
           RetriveXmlNodeValuefromDoc(article,  "//Journal//Title")
         journalCountry <-
