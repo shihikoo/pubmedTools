@@ -74,7 +74,7 @@ RetriveJournalFromPmidEfetcXML <-
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  RetriveFunderFromPmidEfetcXML(c("31353518", "29041955","31230181"))
+#' @examples  RetriveFunderFromPmidEfetcXML(c(29041955","31230181"))
 #' @import XML
 #'
 RetriveFunderFromPmidEfetcXML <-
@@ -170,6 +170,36 @@ RetriveMetaDataFromPmids <- function(pmids, apiKey = "", email = "") {
       )
     return(as.data.frame(t(metaDataFromPMIDs)))
   }
+
+#' RetriveMetaDataFromPmidsBatch
+#'
+#' @param pmids a string of character. PubMed central Id
+#' @param apiKey a string of characters. The API Key obtained through NCBI account
+#' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
+#' @param email a string of characters. Your email address
+#'
+#' @return a nx7 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#'
+#' @examples RetriveMetaDataFromPmidsBatch(c("28852052", "29041955"), endpoint = "esummary")
+#'
+#' @import XML
+#'
+RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary", email = "") {
+  db <- "pubmed"
+  nids <- length(pmids)
+  grid <- 500
+  nloop <- ceiling(nids / grid)
+  results <- as.data.frame(matrix(nrow = nids, ncol = 7))
+
+  for (iloop in 1:nloop) {
+    iindex <- ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+    results[iindex, ] <- GetMetaDataFromPmid(pmids[iindex], apiKey = apiKey, email = email)
+  }
+
+  names(results) <- c("pmid", "journal", "journalCountry", "publicationYear", "funders", "authors", "affiliations")
+  return(results)
+}
 
 #' RetriveUrlfromELinkXML
 #'

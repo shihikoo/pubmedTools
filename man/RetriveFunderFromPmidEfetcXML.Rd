@@ -19,6 +19,3 @@ a list of metaDatarmation retrived from PubMed
 \description{
 RetriveFunderFromPmidEfetcXML
 }
-\examples{
- RetriveFunderFromPmidEfetcXML(c("31353518", "29041955","31230181"))
-}
