@@ -4,10 +4,10 @@
 \alias{RetriveUrlsFromPmids}
 \title{RetriveUrlsFromPmids}
 \usage{
-RetriveUrlsFromPmids(pmids, apiKey = "", email = "", fulltext = TRUE)
+RetriveUrlsFromPmids(pmid, apiKey = "", email = "", fulltext = TRUE)
 }
 \arguments{
-\item{pmids}{a list of numbers or characters. The number of pmid.}
+\item{pmid}{a number or a string of characters. The number of pmid.}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
@@ -16,13 +16,13 @@ RetriveUrlsFromPmids(pmids, apiKey = "", email = "", fulltext = TRUE)
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
 \value{
-a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
+a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T
 Return NULL if none is found.
 }
 \description{
-Retrive urls from pmids
+Get related url links from given pmid
 }
 \examples{
- RetriveUrlsFromPmids(c("28852052", "29041955"), "", "", TRUE)
+RetriveUrlsFromPmids(c("28852052", "29041955"),fulltext = TRUE)
 
 }

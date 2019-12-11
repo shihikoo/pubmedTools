@@ -2,10 +2,10 @@
 % Please edit documentation in R/pubmedRead.R
 \name{DownloadXMLWithPmidsBatch}
 \alias{DownloadXMLWithPmidsBatch}
-\title{DownloadMetaDataWithPmidsBatch}
+\title{DownloadXMLWithPmidsBatch}
 \usage{
 DownloadXMLWithPmidsBatch(pmids, apiKey = "", endpoint = "esummary",
-  email = "", fileBaseName = "")
+  email = "", fileBaseName = "test.xml")
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}
@@ -19,10 +19,10 @@ DownloadXMLWithPmidsBatch(pmids, apiKey = "", endpoint = "esummary",
 \item{fileBaseName}{a string of character. The base name of the to be saved xml files}
 }
 \value{
-a nx3 data frame. With three columns: pmcid, pmid, doi
+the output file names
 }
 \description{
-DownloadMetaDataWithPmidsBatch
+DownloadXMLWithPmidsBatch
 }
 \examples{
 DownloadXMLWithPmidsBatch(c("28852052", "29041955"), endpoint = "esummary", fileBaseName="test.xml")

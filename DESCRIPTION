@@ -1,7 +1,7 @@
 Package: pubmedTools
 Type: Package
 Title: Tools for retriving information from PubMed database
-Version: 0.2.0
+Version: 0.4.0
 Author: person("Jing", "Liao", email = "shihikoo@gmail.com",
                   role = c("aut", "cre"))
 Maintainer: shihikoo <shihikoo@gmail.com>
