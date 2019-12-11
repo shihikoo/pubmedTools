@@ -12,6 +12,7 @@ Example:
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
 pmids <- read.csv(file="example/pmid.csv")
-View(RetriveMetaDataFromPmidsBatch(pmids$x))
+pmids <- rbind(pmids,pmids)
+output <- RetriveMetaDataFromPmidsBatch(pmids$x)
 ```
 

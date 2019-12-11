@@ -22,8 +22,8 @@ DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary",
   nloop <- ceiling(nids / grid)
   outputFiles <- matrix("", nrow=nloop)
   for (iloop in 1:nloop) {
-    iindex <-
-      ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+    iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
+
     doc <-
       GetDoc(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey, email = email)
 
@@ -448,7 +448,7 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
   results <- as.data.frame(matrix(nrow = nids, ncol = 10))
 
   for (iloop in 1:nloop) {
-    iindex <- ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+    iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
 
     if(outputFileBaseName != ""){
       outputFilename <- paste0(
@@ -566,7 +566,7 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "", email = "", fulltext =
   results <- as.data.frame(matrix(nrow = nids, ncol = 2))
 
   for (iloop in 1:nloop) {
-    iindex <- ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+    iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
     result <- RetriveUrlsFromPmids(pmids[iindex], apiKey = apiKey, email = email, fulltext = fulltext)
     results[iindex, ] <- result
   }

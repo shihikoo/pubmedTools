@@ -106,8 +106,7 @@ DownloadMetaDataWithPmcidsBatch <-
     grid <- 500
     nloop <- ceiling(nids / grid)
     for (iloop in 1:nloop) {
-      iindex <-
-        ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
+        iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
       doc <-
         GetDoc(id = pmcids[iindex], db="pmc", endpoint = "efetch",apiKey= apiKey, email = email)
       outputFile <-
