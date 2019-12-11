@@ -405,7 +405,7 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"))
+#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"), apiKey = "2ab938c0c3cfbfe6446b544c8e37c5a4e609")
 #' @import XML
 #'
 RetriveMetaDataFromPmids <-
