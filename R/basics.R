@@ -88,7 +88,7 @@ GetContentWithLink <- function(link, waitTime) {
   while (is.null(content)) {
     tryCatch({
       Sys.sleep(waitTime)
-      r0 <- httr::GET(as.character(link))
+      r0 <- httr::POST(as.character(link))
       content <- httr::content(r0, "text")
     }, error = function(e) {
       print(e)
@@ -137,7 +137,7 @@ GetDoc <-
     cmd = "") {
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
-    if(apiKey != "") waitTime = 0.1 else waitTime = 0.4
+    if(apiKey != "") waitTime = 0 else waitTime = 0.4
 
     content <- GetContentWithLink(link, waitTime)
     doc <- XML::xmlTreeParse(content, encoding = "UTF-8", useInternalNodes = TRUE, trim = FALSE)
