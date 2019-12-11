@@ -4,7 +4,8 @@
 \alias{RetriveMetaDataFromPmidsBatch}
 \title{RetriveMetaDataFromPmidsBatch}
 \usage{
-RetriveMetaDataFromPmidsBatch(pmids, apiKey = "", email = "")
+RetriveMetaDataFromPmidsBatch(pmids, apiKey = "", email = "",
+  outputFileBaseName = "")
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}
@@ -12,6 +13,8 @@ RetriveMetaDataFromPmidsBatch(pmids, apiKey = "", email = "")
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{email}{a string of characters. Your email address}
+
+\item{outputFileBaseName}{a string of characters. The base name of output xml files. If default, there will be no xml saved.}
 }
 \value{
 a nx7 data frame. With three columns: pmcid, pmid, doi

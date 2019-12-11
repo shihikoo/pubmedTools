@@ -400,7 +400,8 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
 #' @param pmid a string of character. PubMed Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
-#'
+#' @param outputFilename a string of characters. Output XML file name
+
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
@@ -410,8 +411,12 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
 RetriveMetaDataFromPmids <-
   function(pmid,
            apiKey = "",
-           email = "") {
+           email = "", outputFilename = "") {
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey, email = email)
+
+    if(outputFilename != ""){
+      outputFile <- XML::saveXML(doc, file = outputFilename)
+    }
 
     results <-
       do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
@@ -427,7 +432,7 @@ RetriveMetaDataFromPmids <-
 #' @param pmids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address
-#'
+#' @param outputFileBaseName a string of characters. The base name of output xml files. If default, there will be no xml saved.
 #' @return a nx7 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
@@ -435,7 +440,7 @@ RetriveMetaDataFromPmids <-
 #'
 #' @import XML
 #'
-RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "") {
+RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", outputFileBaseName = "") {
   db <- "pubmed"
   nids <- length(pmids)
   grid <- 500
@@ -444,7 +449,18 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "") {
 
   for (iloop in 1:nloop) {
     iindex <- ((iloop - 1) * grid) + 1:ifelse(iloop * grid > nids, nids, iloop * grid)
-    result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey, email = email)
+
+    if(outputFileBaseName != ""){
+      outputFilename <- paste0(
+        gsub("[.]xml", "", outputFileBaseName),
+        min(iindex),
+        "_",
+        max(iindex),
+        ".xml"
+      )
+    } else {outputFilename <- ""}
+
+    result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey, email = email, outputFilename = outputFilename)
     results[iindex, ] <- result
   }
 
