@@ -16,7 +16,7 @@ a list of metaDatarmation retrived from PubMed
 Good for used in local multiple xmls
 }
 \examples{
- files <- system.file("example/xml/22427380.xml", package="pubmedTools")
-files <- c("example/xml/22427380.xml", "example/xml/31230181.xml")
+ files <- system.file("extdata", "22427380.xml", package="pubmedTools")
+RetriveMetaDataFromPubmedEfetchParallel(files)
 
 }

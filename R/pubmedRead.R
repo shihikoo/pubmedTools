@@ -379,8 +379,8 @@ RetriveMetaDataFromPubmedEfetch <-
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  files <- system.file("example/xml/22427380.xml", package="pubmedTools")
-#' files <- c("example/xml/22427380.xml", "example/xml/31230181.xml")
+#' @examples  files <- system.file("extdata", "22427380.xml", package="pubmedTools")
+#' RetriveMetaDataFromPubmedEfetchParallel(files)
 #'
 RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
   metaDataFromPMIDs <-
@@ -405,7 +405,7 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"), apiKey = "2ab938c0c3cfbfe6446b544c8e37c5a4e609")
+#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"))
 #' @import XML
 #'
 RetriveMetaDataFromPmids <-
