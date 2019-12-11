@@ -16,6 +16,7 @@ a list of metaDatarmation retrived from PubMed
 RetriveMetaDataFromPubmedEfetch
 }
 \examples{
- doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
+ doc <- GetDoc(id = c("28852052", "29041955","31230181","20704052"), db = "pubmed", endpoint = "efetch")
 metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+
 }

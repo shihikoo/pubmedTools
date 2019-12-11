@@ -71,6 +71,21 @@ RetrivePublicationYearFromPubmedEfetch <- function(doc){
   return(RetriveXmlNodeValuefromDoc(doc,  "//MedlineCitation//DateCompleted//Year"))
 }
 
+#' RetrivePublicationYearFromPubmedEfetch
+#'
+#' @param doc an XMLInternalDocument class file read from a pubmed efetch xml file
+#'
+#' @return a string
+#' @export
+#'
+#' @examples  doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+#'  RetrivePublicationYearFromPubmedEfetch(doc)
+#' @import XML
+#'
+RetrivePublicationYearFromPubmedEfetch <- function(doc){
+  return(RetriveXmlNodeValuefromDoc(doc,  "//History//Year")[[1]])
+}
+
 #' RetriveJournalFromPubmedEfetch
 #'
 #' @param doc an XMLInternalDocument class file read from a pubmed efetch xml file
@@ -185,7 +200,22 @@ RetriveAffiliationFromPubmedEfetch <- function(doc){
 #' @import XML
 #'
 RetriveTitleFromPubmedEfetch <- function(doc){
-  return(RetriveXmlNodeValuefromDoc(doc,  "//Article//ArticleTitle"))
+  return(RetriveXmlNodeValuefromDoc(doc,  "//ArticleTitle"))
+}
+
+#' RetriveBookTitleFromPubmedEfetch
+#'
+#' @param doc an XMLInternalDocument class file read from a pubmed efetch xml file
+#'
+#' @return a string
+#' @export
+#'
+#' @examples  doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+#' RetriveBookTitleFromPubmedEfetch(doc)
+#' @import XML
+#'
+RetriveBookTitleFromPubmedEfetch <- function(doc){
+  return(RetriveXmlNodeValuefromDoc(doc,  "//BookTitle"))
 }
 
 #' RetriveAbstractFromPubmedEfetch
@@ -335,11 +365,15 @@ RetrivePmcidWithPmids <-
 #'
 #' @examples  doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
 #' metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+#'
+#'doc <- GetDoc(id = c("20704052"), db = "pubmed", endpoint = "efetch")
+#' metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+#'
 #' @import XML
 #'
 RetriveMetaDataFromPubmedEfetch <-
   function(doc) {
-    results <-
+    results1 <-
       do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
         article <- XML::xmlDoc(x)
         pmid <- RetrivePMIDFromPubmedEfetch(article)
@@ -368,7 +402,41 @@ RetriveMetaDataFromPubmedEfetch <-
         ))
       }))
 
-    return(as.data.frame(results, stringsAsFactors = F))
+    results2 <-
+      do.call(rbind, XML::xpathApply(doc, "//PubmedBookArticle", function(x) {
+        article <- XML::xmlDoc(x)
+        pmid <- RetrivePMIDFromPubmedEfetch(article)
+        journal <- RetriveJournalFromPubmedEfetch(article)
+        journalCountry <- RetriveJournalCountryFromPubmedEfetch(article)
+        publicationYear <- RetrivePublicationYearFromPubmedEfetch(article)
+        pmcid <- RetrivePMCIDFromPubmedEfetch(article)
+        funders <- RetriveFundersFromPubmedEfetch(article)
+        authors <- RetriveAuthorsFromPubmedEfetch(article)
+        affiliations <- RetriveAffiliationFromPubmedEfetch(article)
+
+        title <- RetriveBookTitleFromPubmedEfetch(article)
+        abstract <- RetriveAbstractFromPubmedEfetch(article)
+
+        return(cbind(
+          pmid,
+          pmcid,
+          journal,
+          journalCountry,
+          publicationYear,
+          funders,
+          authors,
+          affiliations,
+          title,
+          abstract
+        ))
+      }))
+
+    if(exists("results1") & exists("results2")) result <- as.data.frame(rbind(results1, results2), stringsAsFactors = F)
+    else if(exists("results1")) result <- as.data.frame(results1, stringsAsFactors = F)
+    else if(exists("results2")) result <- as.data.frame(results2, stringsAsFactors = F)
+    else result <- NULL
+
+    return(result)
   }
 
 #' RetriveMetaDataFromPubmedEfetchParallel
@@ -405,7 +473,8 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files) {
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"))
+#' @examples  metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181", "20704052"))
+#'  metaData <- RetriveMetaDataFromPmids(c("20704052"))
 #' @import XML
 #'
 RetriveMetaDataFromPmids <-
@@ -419,7 +488,7 @@ RetriveMetaDataFromPmids <-
     }
 
     results <-
-      do.call(rbind, XML::xpathApply(doc, "//PubmedArticle", function(x) {
+      do.call(rbind, XML::xpathApply(doc, "//PubmedArticleSet", function(x) {
         return(RetriveMetaDataFromPubmedEfetch( XML::xmlDoc(x)))
       }))
 
@@ -461,6 +530,8 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
     } else {outputFilename <- ""}
 
     result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey, email = email, outputFilename = outputFilename)
+    a <- merge(result, pmids[iindex])
+
     results[iindex, ] <- result
   }
 

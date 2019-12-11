@@ -23,5 +23,6 @@ a list of metaDatarmation retrived from PubMed
 RetriveMetaDataFromPmids
 }
 \examples{
- metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181"))
+ metaData <- RetriveMetaDataFromPmids(c("28852052", "29041955","31230181", "20704052"))
+ metaData <- RetriveMetaDataFromPmids(c("20704052"))
 }

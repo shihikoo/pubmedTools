@@ -5,17 +5,27 @@
 \title{RetrivePublicationYearFromPubmedEfetch}
 \usage{
 RetrivePublicationYearFromPubmedEfetch(doc)
+
+RetrivePublicationYearFromPubmedEfetch(doc)
 }
 \arguments{
+\item{doc}{an XMLInternalDocument class file read from a pubmed efetch xml file}
+
 \item{doc}{an XMLInternalDocument class file read from a pubmed efetch xml file}
 }
 \value{
 a string
+
+a string
 }
 \description{
 RetrivePublicationYearFromPubmedEfetch
+
+RetrivePublicationYearFromPubmedEfetch
 }
 \examples{
+ doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+ RetrivePublicationYearFromPubmedEfetch(doc)
  doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
  RetrivePublicationYearFromPubmedEfetch(doc)
 }
