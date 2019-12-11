@@ -6,4 +6,12 @@ It is highly recommonded to register a NCBI account and created an API Key. http
 
 The tool contains different functions to retrive meta-data (such as DOI, pdf link, journal, year, author, corresponding author, affiliation etc.) using provided PubMed Id or PubMed Central Id. 
 
-Examples can be found in example folder.
+Example:
+
+```r
+devtools::install_github("shihikoo/pubmedTools")
+library(pubmedTools)
+pmids <- read.csv(file="example/pmid.csv")
+View(RetriveMetaDataFromPmidsBatch(pmids$x))
+```
+

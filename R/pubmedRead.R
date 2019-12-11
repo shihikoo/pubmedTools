@@ -18,7 +18,7 @@
 DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary", email = "", fileBaseName = "test.xml") {
   db <- "pubmed"
   nids <- length(pmids)
-  grid <- 500
+  grid <- 400
   nloop <- ceiling(nids / grid)
   outputFiles <- matrix("", nrow=nloop)
   for (iloop in 1:nloop) {
@@ -443,7 +443,7 @@ RetriveMetaDataFromPmids <-
 RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", outputFileBaseName = "") {
   db <- "pubmed"
   nids <- length(pmids)
-  grid <- 500
+  grid <- 400
   nloop <- ceiling(nids / grid)
   results <- as.data.frame(matrix(nrow = nids, ncol = 10))
 
