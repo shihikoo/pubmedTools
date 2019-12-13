@@ -11,8 +11,6 @@ Example:
 ```r
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
-pmids <- read.csv("inst/extdata/test.csv")
-system.file("extdata", "test.csv", package="pubmedTools")
-output <- RetriveMetaDataFromPmidsBatch(pmids$x)
+pmids <- c("29041955","31230181")
+output <- RetriveMetaDataFromPmidsBatch(pmids)
 ```
-
