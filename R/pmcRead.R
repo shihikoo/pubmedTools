@@ -346,6 +346,7 @@ if(is.na(affiliations) || is.na(correspondingAuthorAffIds)) correspondingAuthorA
 
 #' GetMetaDataFromPmcid
 #'
+#' @description The number of pmcids sent should be less than 500.
 #' @param pmcid a string of character. PubMed Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param email a string of characters. Your email address

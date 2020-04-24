@@ -589,7 +589,7 @@ RetriveUrlFromPubmedElink <- function(doc, category = "All") {
 
 #' RetriveUrlsFromPmids
 #'
-#' Get related url links from given pmid
+#' @description Get related url links from given pmid. The number of pmids sent should be less than 500.
 #'
 #' @param pmid a number or a string of characters. The number of pmid.
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
