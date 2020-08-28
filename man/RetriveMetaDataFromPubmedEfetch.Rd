@@ -22,6 +22,6 @@ RetriveMetaDataFromPubmedEfetch
 metaData <- RetriveMetaDataFromPubmedEfetch(doc)
 
 doc <- GetDoc(id = c("20704052"), db = "pubmed", endpoint = "efetch")
-metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+metaData <- RetriveMetaDataFromPubmedEfetch(doc, columns = c("title","pmid","pages"))
 
 }

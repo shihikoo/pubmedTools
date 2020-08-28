@@ -543,7 +543,7 @@ RetrivePmcidWithPmids <-
 #' metaData <- RetriveMetaDataFromPubmedEfetch(doc)
 #'
 #' doc <- GetDoc(id = c("20704052"), db = "pubmed", endpoint = "efetch")
-#' metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+#' metaData <- RetriveMetaDataFromPubmedEfetch(doc, columns = c("title","pmid","pages"))
 #'
 #' @import xml2
 #'
@@ -603,7 +603,7 @@ RetriveMetaDataFromPubmedEfetch <-
                        "volume",
                        "issue",
                        "pages", "keywords")
-    if(columns == "") columns <- names(result)
+    if(length(columns) == 1 && columns == "") columns <- names(result)
     
     return(result[, intersect(names(result), columns)])
   }
