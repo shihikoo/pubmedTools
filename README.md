@@ -11,6 +11,16 @@ Example:
 ```r
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
-pmids <- c("29041955","31230181")
-output <- RetriveMetaDataFromPmidsBatch(pmids)
+pmids <- GetPmidsWithSearch("pinkeye")
+output <- RetriveMetaDataFromPmidsBatch(pmids, columns = c("pmid","pmcid", "journal",
+                       "journalCountry",
+                       "publicationYear",
+                       "funders",
+                       "authors",
+                       "affiliations",
+                       "title",
+                       "abstract","isbn",
+                       "volume",
+                       "issue",
+                       "pages", "keywords"))
 ```
