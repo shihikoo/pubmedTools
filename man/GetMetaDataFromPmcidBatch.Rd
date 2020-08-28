@@ -4,8 +4,7 @@
 \alias{GetMetaDataFromPmcidBatch}
 \title{GetMetaDataFromPmcidBatch}
 \usage{
-GetMetaDataFromPmcidBatch(pmcids, apiKey = "", email = "",
-  writeFileName = "")
+GetMetaDataFromPmcidBatch(pmcids, apiKey = "", email = "", writeFileName = "")
 }
 \arguments{
 \item{pmcids}{a string of character. PubMed central Id}

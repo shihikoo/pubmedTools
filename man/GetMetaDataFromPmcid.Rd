@@ -4,8 +4,7 @@
 \alias{GetMetaDataFromPmcid}
 \title{GetMetaDataFromPmcid}
 \usage{
-GetMetaDataFromPmcid(pmcid, apiKey = "", email = "",
-  writeFileName = "")
+GetMetaDataFromPmcid(pmcid, apiKey = "", email = "", writeFileName = "")
 }
 \arguments{
 \item{pmcid}{a string of character. PubMed Id}
@@ -20,9 +19,9 @@ GetMetaDataFromPmcid(pmcid, apiKey = "", email = "",
 a list of metaDatarmation retrived from PubMed
 }
 \description{
-GetMetaDataFromPmcid
+The number of pmcids sent should be less than 500.
 }
 \examples{
-GetMetaDataFromPmcid(c("5575286", "4804230"))
+mydata <- GetMetaDataFromPmcid(c("5575286", "4804230"))
 
 }

@@ -22,4 +22,5 @@ GetPmidDoiFromPmcidBatch
 \examples{
 pmid <- GetPmidDoiFromPmcidBatch(c("5575286", "4804230"))
 
+
 }

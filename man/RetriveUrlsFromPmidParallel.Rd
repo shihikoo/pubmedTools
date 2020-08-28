@@ -4,8 +4,7 @@
 \alias{RetriveUrlsFromPmidParallel}
 \title{RetriveUrlsFromPmidParallel}
 \usage{
-RetriveUrlsFromPmidParallel(pmids, apiKey = "", email = "",
-  fulltext = TRUE)
+RetriveUrlsFromPmidParallel(pmids, apiKey = "", email = "", fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a list of numbers or characters. The number of pmid.}

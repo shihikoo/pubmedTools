@@ -4,10 +4,12 @@
 \alias{RetriveMetaDataFromPubmedEfetch}
 \title{RetriveMetaDataFromPubmedEfetch}
 \usage{
-RetriveMetaDataFromPubmedEfetch(doc)
+RetriveMetaDataFromPubmedEfetch(doc, columns = "")
 }
 \arguments{
 \item{doc}{an XMLInternalDocument class file read from a pubmed efetch xml file}
+
+\item{columns}{a list of string of requested column names}
 }
 \value{
 a list of metaDatarmation retrived from PubMed
@@ -16,7 +18,10 @@ a list of metaDatarmation retrived from PubMed
 RetriveMetaDataFromPubmedEfetch
 }
 \examples{
- doc <- GetDoc(id = c("28852052", "29041955","31230181","20704052"), db = "pubmed", endpoint = "efetch")
+ doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
+metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+
+doc <- GetDoc(id = c("20704052"), db = "pubmed", endpoint = "efetch")
 metaData <- RetriveMetaDataFromPubmedEfetch(doc)
 
 }

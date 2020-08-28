@@ -4,8 +4,13 @@
 \alias{RetriveMetaDataFromPmids}
 \title{RetriveMetaDataFromPmids}
 \usage{
-RetriveMetaDataFromPmids(pmid, apiKey = "", email = "",
-  outputFilename = "")
+RetriveMetaDataFromPmids(
+  pmid,
+  apiKey = "",
+  email = "",
+  outputFilename = "",
+  columns = ""
+)
 }
 \arguments{
 \item{pmid}{a string of character. PubMed Id}
@@ -15,6 +20,8 @@ RetriveMetaDataFromPmids(pmid, apiKey = "", email = "",
 \item{email}{a string of characters. Your email address}
 
 \item{outputFilename}{a string of characters. Output XML file name}
+
+\item{columns}{the columns of output requested}
 }
 \value{
 a list of metaDatarmation retrived from PubMed

@@ -4,8 +4,7 @@
 \alias{RetriveUrlsFromPmidsBatch}
 \title{RetriveUrlsFromPmidsBatch}
 \usage{
-RetriveUrlsFromPmidsBatch(pmids, apiKey = "", email = "",
-  fulltext = TRUE)
+RetriveUrlsFromPmidsBatch(pmids, apiKey = "", email = "", fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}

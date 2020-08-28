@@ -5,11 +5,24 @@
 \title{GetAPIlink
 Return E-utility links with parameters}
 \usage{
-GetAPIlink(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/",
-  endpoint = "esearch", db = "pubmed", id = "", apiKey = "",
-  email = "", retmode = "XML", term = "", reldate = "",
-  datetype = "", retmax = 1000, usehistory = "y", retstart = "",
-  tool = "pubmedTools", WebEnv = "", cmd = "")
+GetAPIlink(
+  baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/",
+  endpoint = "esearch",
+  db = "pubmed",
+  id = "",
+  apiKey = "",
+  email = "",
+  retmode = "XML",
+  term = "",
+  reldate = "",
+  datetype = "",
+  retmax = 1000,
+  usehistory = "y",
+  retstart = "",
+  tool = "pubmedTools",
+  WebEnv = "",
+  cmd = ""
+)
 }
 \arguments{
 \item{baseUrl}{a string of characters, default is "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"}

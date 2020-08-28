@@ -16,7 +16,11 @@ a string: publicationDate
 GetEpubDateFromPmcidEfetchDoc
 }
 \examples{
-doc <- GetDoc(id=c("5304250","4415024","4804230"),db= "pmc", endpoint="efetch")
+doc <- GetDoc(id="5304250",db= "pmc", endpoint="efetch")
+GetEpubDateFromPmcidEfetchDoc(doc)
+doc <- GetDoc(id="4415024",db= "pmc", endpoint="efetch")
+GetEpubDateFromPmcidEfetchDoc(doc)
+doc <- GetDoc(id="4804230",db= "pmc", endpoint="efetch")
 GetEpubDateFromPmcidEfetchDoc(doc)
 
 }

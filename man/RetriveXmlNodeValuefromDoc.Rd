@@ -19,6 +19,6 @@ RetriveXmlNodeValuefromDoc
 }
 \examples{
  doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="esummary")
-RetriveXmlNodeValuefromDoc(doc, "//DocSum")
+RetriveXmlNodeValuefromDoc(doc, "//Id")
 
 }

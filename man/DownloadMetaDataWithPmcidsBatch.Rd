@@ -4,8 +4,12 @@
 \alias{DownloadMetaDataWithPmcidsBatch}
 \title{DownloadMetaDataWithPmcidsBatch}
 \usage{
-DownloadMetaDataWithPmcidsBatch(pmcids, apiKey = "", email = "",
-  fileBaseName = "")
+DownloadMetaDataWithPmcidsBatch(
+  pmcids,
+  apiKey = "",
+  email = "",
+  fileBaseName = ""
+)
 }
 \arguments{
 \item{pmcids}{a string of character. PubMed central Id}

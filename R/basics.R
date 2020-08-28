@@ -97,6 +97,56 @@ GetContentWithLink <- function(link, waitTime) {
   return(content)
 }
 
+#' GetJson
+#'
+#' @param endpoint a string of characters, valid endpoint of NCBI Utilities, e.g. "eserach", "efetch","elink", "esummary"
+#' @param db a string of characters. Target database about which to gather statistics. Values must match https://www.ncbi.nlm.nih.gov/books/n/helpeutils/chapter2/#chapter2.chapter2_table1
+#' @param id a list of strings. UID list. Either a single UID or a UID list
+#' @param apiKey a string of characters. API Key of the user. NCBI will begin enforcing the practice of using an API key for sites that post more than 3 requests per second.
+#' @param email a string of characters. E-mail address of the E-utility user.
+#' @param term a string of characters. Entrez text query.
+#' @param reldate a string of characters, When reldate is set to an integer n, the search returns only those items that have a date specified by datetype within the last n days.
+#' @param datetype a string of characters. Type of date used to limit a search. The allowed values vary between Entrez databases, but common values are 'mdat' (modification date), 'pdat' (publication date) and 'edat' (Entrez date).
+#' @param retmax a string of characters. Total number of UIDs from the retrieved set to be shown in the XML output (default=20). By default, ESearch only includes the first 20 UIDs retrieved in the XML output.
+#' @param usehistory a string of characters. When usehistory is set to 'y', ESearch will post the UIDs resulting from the search operation onto the History server so that they can be used directly in a subsequent E-utility call. Also, usehistory must be set to 'y' for ESearch to interpret query key values included in term or to accept a WebEnv as input.
+#' @param retstart a string of characters.Sequential index of the first UID in the retrieved set to be shown in the XML output. This parameter can be used in conjunction with retmax to download an arbitrary subset of UIDs retrieved from a search.
+#' @param WebEnv a string of characters. Web environment string returned from a previous ESearch, EPost or ELink call. When provided, ESearch will post the results of the search operation to this pre-existing
+#' @param cmd a string of characters. ELink command mode. The command mode specified which function ELink will perform. Some optional parameters only function for certain values of &cmd
+#'
+#' @return a XMLInternalDocument
+#' @export
+#'
+#' @import jsonlite
+#'
+#' @examples GetJson(db = "pubmed", endpoint = "esearch", term="pinkeye", retmax=5)
+#'
+#'
+GetJson <-
+  function( endpoint = "",
+            db = "",
+            id = "",
+            apiKey = "",
+            email = "",
+            term = "",
+            reldate = "",
+            datetype = "",
+            retmax = 1000,
+            usehistory ="y",
+            retstart = "",
+            WebEnv = "",
+            cmd = "") {
+    if(endpoint == "efetch")retmode = "" else retmode = "json"
+    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
+    # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
+    if(apiKey != "") waitTime = 0 else waitTime = 0.4
+    
+    content <- GetContentWithLink(link, waitTime)
+
+    result_json <- jsonlite::parse_json(content)
+    
+    return(result_json)
+  }
+
 #' GetDoc
 #'
 #' @param endpoint a string of characters, valid endpoint of NCBI Utilities, e.g. "eserach", "efetch","elink", "esummary"
@@ -116,7 +166,7 @@ GetContentWithLink <- function(link, waitTime) {
 #' @return a XMLInternalDocument
 #' @export
 #'
-#' @import XML
+#' @import xml2
 #'
 #' @examples GetDoc(db = "pubmed", endpoint = "esearch", term="stroke", retmax=5)
 #' GetDoc(id = "5575286", db = "pmc", endpoint = "efetch")
@@ -135,12 +185,13 @@ GetDoc <-
     retstart = "",
     WebEnv = "",
     cmd = "") {
-    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
+    retmode <- "XML"
+    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0 else waitTime = 0.4
 
     content <- GetContentWithLink(link, waitTime)
-    doc <- XML::xmlTreeParse(content, encoding = "UTF-8", useInternalNodes = TRUE, trim = FALSE)
+    doc <- xml2::read_xml(content, encoding = "UTF-8", useInternalNodes = TRUE, trim = FALSE)
 
     return(doc)
   }
@@ -153,14 +204,14 @@ GetDoc <-
 #' @return the values of the node
 #' @export
 #' @examples  doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="esummary")
-#' RetriveXmlNodeValuefromDoc(doc, "//DocSum")
+#' RetriveXmlNodeValuefromDoc(doc, "//Id")
 #'
-#' @import XML
+#' @import xml2
 #'
 RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
-  nodes <- XML::xpathApply(doc, nodePosition)
+  nodes <- xml2::xml_find_all(doc, nodePosition)
   if (length(nodes) == 0) return(NA)
-  results <- gsub("\t"," ",gsub("\n","",sapply(nodes, XML::xmlValue), fixed = T), fixed = T)
+  results <- gsub("\t"," ",gsub("\n","",sapply(nodes, xml2::xml_text), fixed = T), fixed = T)
   results[which(results == "NA")] <- NA
 
   return(results)

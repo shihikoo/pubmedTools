@@ -20,7 +20,7 @@ a list of characters. A list of urls. Return fulltext urls if fulltext parameter
 Return NULL if none is found.
 }
 \description{
-Get related url links from given pmid
+Get related url links from given pmid. The number of pmids sent should be less than 500.
 }
 \examples{
 RetriveUrlsFromPmids(c("28852052", "29041955"),fulltext = TRUE)

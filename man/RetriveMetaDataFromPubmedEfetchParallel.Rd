@@ -4,10 +4,12 @@
 \alias{RetriveMetaDataFromPubmedEfetchParallel}
 \title{RetriveMetaDataFromPubmedEfetchParallel}
 \usage{
-RetriveMetaDataFromPubmedEfetchParallel(files)
+RetriveMetaDataFromPubmedEfetchParallel(files, columns = "")
 }
 \arguments{
 \item{files}{a list of string. A list of xml filenames}
+
+\item{columns}{the columns of output requested}
 }
 \value{
 a list of metaDatarmation retrived from PubMed
@@ -16,7 +18,8 @@ a list of metaDatarmation retrived from PubMed
 Good for used in local multiple xmls
 }
 \examples{
- files <- system.file("extdata", "22427380.xml", package="pubmedTools")
-RetriveMetaDataFromPubmedEfetchParallel(files)
+baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+link <- paste0(baselink, "?db=pubmed&id=31524133&retmode=xml")
+RetriveMetaDataFromPubmedEfetchParallel(link)
 
 }
