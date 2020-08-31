@@ -9,7 +9,8 @@
 #' @return the output file names
 #' @export
 #'
-#' @examples GetPmidsWithSearch("pinkeye")
+#' @examples term = "pinkeye"
+#' GetPmidsWithSearch(term)
 #'
 #' @import jsonlite
 #'

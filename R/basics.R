@@ -45,6 +45,10 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                         ) {
   baseUrl <- paste0(baseUrl, endpoint, ".fcgi?")
 
+  term <- gsub(" ", "+", term)
+  term <- gsub("\"","%22", term)
+  term <- gsub("#","%23",term)
+  
   db <- ifelse(db != "", ifelse(endpoint == "elink",  paste0("dbfrom=",db),  paste0("db=",db)),NA)
   id <- ifelse(length(id) > 0,  paste0("id=",paste0(id, collapse = ",")),NA)
   apiKey <- ifelse(apiKey != "", paste0("api_key=",apiKey),NA)
@@ -60,6 +64,7 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
   WebEnv <- ifelse(WebEnv != "",  paste0("WebEnv=",WebEnv),NA)
   cmd <- ifelse(cmd != "",  paste0("cmd=",cmd),NA)
 
+  
   paras <- paste0(na.omit(c(db, id, apiKey,email,retmode,term,reldate,datetype,retmax,usehistory,retstart,tool,WebEnv,cmd)), collapse = "&")
 
   link <- paste0(baseUrl, paras)
@@ -96,6 +101,7 @@ GetContentWithLink <- function(link, waitTime) {
   }
   return(content)
 }
+
 
 #' GetJson
 #'
@@ -139,9 +145,7 @@ GetJson <-
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0 else waitTime = 0.4
-    
     content <- GetContentWithLink(link, waitTime)
-
     result_json <- jsonlite::parse_json(content)
     
     return(result_json)
