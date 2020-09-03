@@ -572,7 +572,8 @@ RetriveMetaDataFromPubmedEfetch <-
       issue <- RetriveIssueFromPubmedEfetch(article)
       pages <- RetrivePagesFromPubmedEfetch(article)
       keywords <- paste(RetriveKeywordsFromPubmedEfetch(article),collapse = "; ")
-
+      doi <- RetriveDOIFromPubmedEfetch(article)
+        
       return(cbind(
         pmid,
         pmcid,
@@ -588,7 +589,8 @@ RetriveMetaDataFromPubmedEfetch <-
         volume,
         issue,
         pages,
-        keywords
+        keywords,
+        doi
       ))
     })
 
@@ -603,7 +605,7 @@ RetriveMetaDataFromPubmedEfetch <-
                        "abstract","isbn",
                        "volume",
                        "issue",
-                       "pages", "keywords")
+                       "pages", "keywords","doi")
     if(length(columns) == 1 && columns == "") columns <- names(result)
     
     return(result[, intersect(names(result), columns)])
@@ -683,7 +685,7 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
   nids <- length(pmids)
   grid <- 400
   nloop <- ceiling(nids / grid)
-  results <- as.data.frame(matrix(nrow = nids, ncol = 15))
+  # results <- as.data.frame(matrix(nrow = nids, ncol = 16))
 
   for (iloop in 1:nloop) {
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
@@ -699,8 +701,8 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
     } else {outputFilename <- ""}
 
     result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey, email = email, outputFilename = outputFilename, columns = columns)
-
-    results[iindex, ] <- result
+    if(exists("results")) results[iindex, ] <- result else results <- result
+    
   }
   names(results) <- names(result)
   return(results)

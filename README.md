@@ -22,5 +22,5 @@ output <- RetriveMetaDataFromPmidsBatch(pmids, columns = c("pmid","pmcid", "jour
                        "abstract","isbn",
                        "volume",
                        "issue",
-                       "pages", "keywords"))
+                       "pages", "keywords","doi"))
 ```
