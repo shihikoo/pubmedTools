@@ -9,9 +9,11 @@ The tool contains different functions to retrive meta-data (such as DOI, pdf lin
 Example:
 
 ```r
+install.packages("devtools")
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
-pmids <- GetPmidsWithSearch("pinkeye")
+searchTerm = "pinkeye"
+pmids <- GetPmidsWithSearch(searchTerm)
 output <- RetriveMetaDataFromPmidsBatch(pmids, columns = c("pmid","pmcid", "journal",
                        "journalCountry",
                        "publicationYear",

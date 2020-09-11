@@ -16,6 +16,8 @@ a string
 RetriveDOIFromPubmedEfetch
 }
 \examples{
- doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+ 
+doc <- GetDoc(id = "31524133", db = "pubmed", endpoint = "efetch")
 RetriveDOIFromPubmedEfetch(doc)
+
 }

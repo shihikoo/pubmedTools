@@ -16,6 +16,6 @@ a string
 RetriveBookTitleFromPubmedEfetch
 }
 \examples{
- doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+ doc <- GetDoc(id = "20704052", db = "pubmed", endpoint = "efetch")
 RetriveBookTitleFromPubmedEfetch(doc)
 }

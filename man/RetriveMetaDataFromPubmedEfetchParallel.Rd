@@ -19,7 +19,7 @@ Good for used in local multiple xmls
 }
 \examples{
 baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-link <- paste0(baselink, "?db=pubmed&id=31524133&retmode=xml")
+link <- paste0(baselink, "?db=pubmed&id=20704052&retmode=xml")
 RetriveMetaDataFromPubmedEfetchParallel(link)
 
 }

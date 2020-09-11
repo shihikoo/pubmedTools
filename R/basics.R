@@ -45,12 +45,12 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                         ) {
   baseUrl <- paste0(baseUrl, endpoint, ".fcgi?")
 
-  term <- gsub(" ", "+", term)
-  term <- gsub("\"","%22", term)
-  term <- gsub("#","%23",term)
+  # term <- gsub(" ", "+", term)
+  # term <- gsub("\"","%22", term)
+  # term <- gsub("#","%23",term)
   
   db <- ifelse(db != "", ifelse(endpoint == "elink",  paste0("dbfrom=",db),  paste0("db=",db)),NA)
-  id <- ifelse(length(id) > 0,  paste0("id=",paste0(id, collapse = ",")),NA)
+  id <- ifelse(length(id) > 0 & all(id  != ""),  paste0("id=", paste0(id, collapse = ",") ),NA)
   apiKey <- ifelse(apiKey != "", paste0("api_key=",apiKey),NA)
   email <- ifelse(email != "",  paste0("email=",email),NA)
   retmode <- ifelse(retmode != "", paste0("retmode=",retmode),NA)
@@ -69,9 +69,10 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
 
   link <- paste0(baseUrl, paras)
 
+  r0 <- httr::POST("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch", body = list('db' = "pubmed",'term' = 'pinkeye'))
+
   return(link)
 }
-
 
 #' GetContentWithLink
 #'
@@ -85,15 +86,22 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
 #' link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
 #' content <- GetContentWithLink(link, 0.3)
 #'
-#' @import httr
+#' @import httr stringr
 #'
-GetContentWithLink <- function(link, waitTime) {
+GetContentWithLink <- function(link, waitTime = 0.3) {
   httr::set_config(httr::config(http_version = 0))
   content = NULL
   while (is.null(content)) {
     tryCatch({
       Sys.sleep(waitTime)
-      r0 <- httr::POST(as.character(link))
+      
+      baselink <- stringr::str_split(link,"[?]")[[1]][1]
+      paras <- stringr::str_split(link,"[?]")[[1]][2]
+      paralist <- stringr::str_split(stringr::str_split(paras,"[&]")[[1]], "=")
+      fineParalist <- lapply(paralist, function(x) x[[2]])
+      names(fineParalist) <- lapply(paralist, function(x) x[[1]])
+                 
+      r0 <- httr::POST(as.character(baselink), body = fineParalist)
       content <- httr::content(r0, "text")
     }, error = function(e) {
       print(e)
@@ -101,7 +109,6 @@ GetContentWithLink <- function(link, waitTime) {
   }
   return(content)
 }
-
 
 #' GetJson
 #'
@@ -141,7 +148,7 @@ GetJson <-
             retstart = "",
             WebEnv = "",
             cmd = "") {
-    if(endpoint == "efetch")retmode = "" else retmode = "json"
+    if(endpoint == "efetch") retmode = "" else retmode = "json"
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0 else waitTime = 0.4

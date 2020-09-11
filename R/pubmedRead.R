@@ -275,7 +275,7 @@ RetriveTitleFromPubmedEfetch <- function(doc){
 #' @return a string
 #' @export
 #'
-#' @examples  doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+#' @examples  doc <- GetDoc(id = "20704052", db = "pubmed", endpoint = "efetch")
 #' RetriveBookTitleFromPubmedEfetch(doc)
 #' @import xml2
 #'
@@ -305,12 +305,15 @@ RetriveAbstractFromPubmedEfetch <- function(doc){
 #' @return a string
 #' @export
 #'
-#' @examples  doc <- GetDoc(id = "28852052", db = "pubmed", endpoint = "efetch")
+#' @examples  
+#' doc <- GetDoc(id = "31524133", db = "pubmed", endpoint = "efetch")
 #' RetriveDOIFromPubmedEfetch(doc)
+#' 
 #' @import xml2
 #'
 RetriveDOIFromPubmedEfetch <- function(doc){
-  return(RetriveXmlNodeValuefromDoc(doc,  "//ArticleId[@IdType = 'doi']"))
+  return(RetriveXmlNodeValuefromDoc(doc,  "//ELocationID[@EIdType = 'doi']"))
+  # return(RetriveXmlNodeValuefromDoc(doc,  "//ArticleId[@IdType = 'doi']"))
 }
 
 #' RetriveIBSNFromPubmedEfetch
@@ -540,11 +543,15 @@ RetrivePmcidWithPmids <-
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
-#' metaData <- RetriveMetaDataFromPubmedEfetch(doc)
+#' @examples  
+#' doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
+#' RetriveMetaDataFromPubmedEfetch(doc, columns = c("pmid","pmcid","title","doi"))
+#'
+#' doc <- GetDoc(id = c("31524133"), db = "pubmed", endpoint = "efetch")
+#' RetriveMetaDataFromPubmedEfetch(doc, columns = c("pmid","pmcid","title","doi"))
 #'
 #' doc <- GetDoc(id = c("20704052"), db = "pubmed", endpoint = "efetch")
-#' metaData <- RetriveMetaDataFromPubmedEfetch(doc, columns = c("title","pmid","pages"))
+#' RetriveMetaDataFromPubmedEfetch(doc, columns = c("pmid","pmcid","title","doi"))
 #'
 #' @import xml2
 #'
@@ -554,8 +561,9 @@ RetriveMetaDataFromPubmedEfetch <-
     nodesetList2 <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedBookArticle"))
     nodesetList <- c(nodesetList1, nodesetList2)
     resultList <- sapply(nodesetList, function(x) {
+      # y <- xml2::xml_find_first(xml2::as_xml_document(x), "//MedlineCitation")
       article <- xml2::as_xml_document(list(x))
-
+      
       pmid <- RetrivePMIDFromPubmedEfetch(article)
       pmcid <- RetrivePMCIDFromPubmedEfetch(article)
       journal <- RetriveJournalFromPubmedEfetch(article)
@@ -565,7 +573,7 @@ RetriveMetaDataFromPubmedEfetch <-
       authors <- RetriveAuthorsFromPubmedEfetch(article)
       affiliations <- RetriveAffiliationFromPubmedEfetch(article)
       title <- RetriveTitleFromPubmedEfetch(article)
-      if (is.na(title)) RetriveBookTitleFromPubmedEfetch(article)
+      if(is.na(title)) title <- RetriveBookTitleFromPubmedEfetch(article)
       abstract <- RetriveAbstractFromPubmedEfetch(article)
       isbn <- RetriveIBSNFromPubmedEfetch(article)
       volume <- RetriveVolumeFromPubmedEfetch(article)
@@ -606,7 +614,7 @@ RetriveMetaDataFromPubmedEfetch <-
                        "volume",
                        "issue",
                        "pages", "keywords","doi")
-    if(length(columns) == 1 && columns == "") columns <- names(result)
+    if(length(columns) == 1 && all(columns == "")) columns <- names(result)
     
     return(result[, intersect(names(result), columns)])
   }
@@ -620,8 +628,9 @@ RetriveMetaDataFromPubmedEfetch <-
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-#' link <- paste0(baselink, "?db=pubmed&id=31524133&retmode=xml")
+#' @examples 
+#' baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+#' link <- paste0(baselink, "?db=pubmed&id=20704052&retmode=xml")
 #' RetriveMetaDataFromPubmedEfetchParallel(link)
 #'
 RetriveMetaDataFromPubmedEfetchParallel <- function(files, columns = "") {

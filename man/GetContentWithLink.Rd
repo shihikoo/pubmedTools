@@ -4,7 +4,7 @@
 \alias{GetContentWithLink}
 \title{GetContentWithLink}
 \usage{
-GetContentWithLink(link, waitTime)
+GetContentWithLink(link, waitTime = 0.3)
 }
 \arguments{
 \item{link}{a string of characters}
