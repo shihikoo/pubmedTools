@@ -17,6 +17,7 @@
 #' @param tool a string of characters. Name of application making the E-utility call.
 #' @param WebEnv a string of characters. Web environment string returned from a previous ESearch, EPost or ELink call. When provided, ESearch will post the results of the search operation to this pre-existing
 #' @param cmd a string of characters. ELink command mode. The command mode specified which function ELink will perform. Some optional parameters only function for certain values of &cmd
+#' @param queryKey  a string of characters. an integer label called a query key
 #'
 #' @return link
 #' @export
@@ -31,7 +32,7 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                         db = "pubmed",
                         id = "",
                         apiKey = "",
-                        email = "",
+                        email = "shihikoo@gmail.com",
                         retmode = "XML",
                         term = "",
                         reldate = "",
@@ -41,7 +42,8 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                         retstart = "",
                         tool = "pubmedTools",
                         WebEnv = "",
-                        cmd = ""
+                        cmd = "",
+                       queryKey = ""
                         ) {
   baseUrl <- paste0(baseUrl, endpoint, ".fcgi?")
 
@@ -63,18 +65,15 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
   tool <- ifelse(tool != "",  paste0("tool=",tool),NA)
   WebEnv <- ifelse(WebEnv != "",  paste0("WebEnv=",WebEnv),NA)
   cmd <- ifelse(cmd != "",  paste0("cmd=",cmd),NA)
-
+  queryKey <- ifelse(queryKey != "",  paste0("query_key=",queryKey),NA)
   
-  paras <- paste0(na.omit(c(db, id, apiKey,email,retmode,term,reldate,datetype,retmax,usehistory,retstart,tool,WebEnv,cmd)), collapse = "&")
+  paras <- paste0(na.omit(c(db, id, apiKey,email,retmode,term,reldate,datetype,retmax,usehistory,retstart,tool,WebEnv,cmd,queryKey )), collapse = "&")
 
   link <- paste0(baseUrl, paras)
-
-  r0 <- httr::POST("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch", body = list('db' = "pubmed",'term' = 'pinkeye'))
-
   return(link)
 }
 
-#' GetContentWithLink
+#' GetContentByPostLink
 #'
 #' @param link a string of characters
 #' @param waitTime a number. Waiting of the program
@@ -84,28 +83,66 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
 #'
 #' @examples baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 #' link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
-#' content <- GetContentWithLink(link, 0.3)
+#' content <- GetContentByPostLink(link, 0.3)
 #'
 #' @import httr stringr
 #'
-GetContentWithLink <- function(link, waitTime = 0.3) {
-  httr::set_config(httr::config(http_version = 0))
-  content = NULL
-  while (is.null(content)) {
+GetContentByPostLink <- function(link, waitTime = 0.3) {
+  # httr::set_config(httr::config(http_version = 0))
+  content <- NULL
+  attampt <- 0
+  while (is.null(content) & attampt < 5) {
     tryCatch({
-      Sys.sleep(waitTime)
-      
       baselink <- stringr::str_split(link,"[?]")[[1]][1]
       paras <- stringr::str_split(link,"[?]")[[1]][2]
       paralist <- stringr::str_split(stringr::str_split(paras,"[&]")[[1]], "=")
       fineParalist <- lapply(paralist, function(x) x[[2]])
       names(fineParalist) <- lapply(paralist, function(x) x[[1]])
-                 
+      print("Send Post request")
+      # print(fineParalist)
+      Sys.sleep(waitTime*attampt)
       r0 <- httr::POST(as.character(baselink), body = fineParalist)
+      print("Receive Post request")
       content <- httr::content(r0, "text")
     }, error = function(e) {
       print(e)
     })
+    attampt <- attampt + 1
+  }
+  return(content)
+}
+
+#' GetContentByGetLink
+#'
+#' @param link a string of characters
+#' @param waitTime a number. Waiting of the program
+#'
+#' @return a string of characters of the returned content
+#' @export
+#'
+#' @examples baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+#' link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
+#' content <- GetContentByGetLink(link, 0.3)
+#'
+#' @import httr 
+#'
+GetContentByGetLink <- function(link, waitTime = 0.3) {
+  # httr::set_config(httr::config(http_version = 0))
+  content <- NULL
+  attampt <- 0
+  while (is.null(content) & attampt < 10) {
+    tryCatch({
+      print("Send GET request")
+      iwaitTime <- waitTime*(attampt+1)
+      Sys.sleep(iwaitTime)
+      r0 <- httr::GET(link)
+      print("Receive GET request")
+      content <- httr::content(r0, "text")
+      # print(content)
+    }, error = function(e) {
+      print(e)
+    })
+    attampt <- attampt + 1
   }
   return(content)
 }
@@ -151,8 +188,11 @@ GetJson <-
     if(endpoint == "efetch") retmode = "" else retmode = "json"
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
-    if(apiKey != "") waitTime = 0 else waitTime = 0.4
-    content <- GetContentWithLink(link, waitTime)
+    if(apiKey != "") waitTime = 0.3 else waitTime = 0.4
+    print(link)
+    
+    if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <-  GetContentByGetLink(link, waitTime)
+    if(is.null(content)) return(NULL)
     result_json <- jsonlite::parse_json(content)
     
     return(result_json)
@@ -173,7 +213,8 @@ GetJson <-
 #' @param retstart a string of characters.Sequential index of the first UID in the retrieved set to be shown in the XML output. This parameter can be used in conjunction with retmax to download an arbitrary subset of UIDs retrieved from a search.
 #' @param WebEnv a string of characters. Web environment string returned from a previous ESearch, EPost or ELink call. When provided, ESearch will post the results of the search operation to this pre-existing
 #' @param cmd a string of characters. ELink command mode. The command mode specified which function ELink will perform. Some optional parameters only function for certain values of &cmd
-#'
+#' @param queryKey  a string of characters. an integer label called a query key
+
 #' @return a XMLInternalDocument
 #' @export
 #'
@@ -195,13 +236,18 @@ GetDoc <-
     usehistory ="y",
     retstart = "",
     WebEnv = "",
-    cmd = "") {
+    cmd = "",
+    queryKey = "") {
     retmode <- "XML"
-    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode)
+    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode,queryKey=queryKey)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
-    if(apiKey != "") waitTime = 0 else waitTime = 0.4
+    if(apiKey != "") waitTime = 0.4 else waitTime = 0.4
+    print(link)
 
-    content <- GetContentWithLink(link, waitTime)
+    if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <- GetContentByGetLink(link, waitTime)
+    
+    if(is.null(content)) return(NULL)
+    
     doc <- xml2::read_xml(content, encoding = "UTF-8", useInternalNodes = TRUE, trim = FALSE)
 
     return(doc)

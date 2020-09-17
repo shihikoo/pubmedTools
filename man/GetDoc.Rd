@@ -17,7 +17,8 @@ GetDoc(
   usehistory = "y",
   retstart = "",
   WebEnv = "",
-  cmd = ""
+  cmd = "",
+  queryKey = ""
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ GetDoc(
 \item{WebEnv}{a string of characters. Web environment string returned from a previous ESearch, EPost or ELink call. When provided, ESearch will post the results of the search operation to this pre-existing}
 
 \item{cmd}{a string of characters. ELink command mode. The command mode specified which function ELink will perform. Some optional parameters only function for certain values of &cmd}
+
+\item{queryKey}{a string of characters. an integer label called a query key}
 }
 \value{
 a XMLInternalDocument

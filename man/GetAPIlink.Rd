@@ -11,7 +11,7 @@ GetAPIlink(
   db = "pubmed",
   id = "",
   apiKey = "",
-  email = "",
+  email = "shihikoo@gmail.com",
   retmode = "XML",
   term = "",
   reldate = "",
@@ -21,7 +21,8 @@ GetAPIlink(
   retstart = "",
   tool = "pubmedTools",
   WebEnv = "",
-  cmd = ""
+  cmd = "",
+  queryKey = ""
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ GetAPIlink(
 \item{WebEnv}{a string of characters. Web environment string returned from a previous ESearch, EPost or ELink call. When provided, ESearch will post the results of the search operation to this pre-existing}
 
 \item{cmd}{a string of characters. ELink command mode. The command mode specified which function ELink will perform. Some optional parameters only function for certain values of &cmd}
+
+\item{queryKey}{a string of characters. an integer label called a query key}
 }
 \value{
 link

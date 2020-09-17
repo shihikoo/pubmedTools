@@ -1,5 +1,28 @@
 #---------- Download  -----
 
+#' GetSearchSummaryWithSearch
+#'
+#' @param searchTerm a string of characters. search string
+#'
+#' @return a list of strings - searchSummary
+#' @export
+#'
+#' @examples  GetSearchSummaryWithSearch("pinkeye")
+#'
+#' @import jsonlite
+#'
+GetSearchSummaryWithSearch <- function(searchTerm) {
+  db <- "pubmed"
+  endpoint = "esearch"
+
+  result_json <-
+    GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = 'y', retmax = 1)
+  
+  searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
+
+  return(searchSummary)
+}
+
 #' GetPmidsWithSearch
 #'
 #' @param searchTerm a string of characters. search string
@@ -20,7 +43,7 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "",  email = "") {
   batchSize <- 500
   
   result_json <-
-    GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey, email = email, usehistory = T, retmax = batchSize)
+    GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey, email = email, usehistory = 'y', retmax = batchSize)
   
   esearchresult <- result_json$esearchresult
   
@@ -667,11 +690,95 @@ RetriveMetaDataFromPmids <-
            email = "", outputFilename = "", columns = "") {
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey, email = email)
 
-    if(outputFilename != "") outputFile <- xml2::write_xml(doc, file = outputFilename)
-    results <- RetriveMetaDataFromPubmedEfetch(doc, columns = columns)
+    if(outputFilename != "") {
+      outputFile <- xml2::write_xml(doc, file = outputFilename)
+      print(paste0("Save file ", outputFilename))
+    }
+    results <- merge(data.frame(pmid = pmid)
+                     , RetriveMetaDataFromPubmedEfetch(doc, columns = columns),by="pmid" )
+    
+    if(outputFilename != "") {
+    print(paste0("Completed retrive results for", outputFilename))
+    }
+    return(results)
+  }
+
+#---------- Multiple parsers with pmids as input ----
+#' RetriveMetaDataFromSearch
+#'
+#' @param searchTerm a string of character. search term
+#' @param columns the columns of output requested
+#' @param outputFilename a string of characters. Output XML file name
+#' 
+#' @return a list of metaDatarmation retrived from PubMed
+#' @export
+#'
+#' @examples  
+#' searchTerm <-  "pinkeye"
+#' metaData <- RetriveMetaDataFromSearch(searchTerm)
+#'
+#' @import xml2
+#'
+RetriveMetaDataFromSearch <-
+  function(searchTerm, columns = "", outputFilename="") {
+    searchSummary <- GetSearchSummaryWithSearch(searchTerm)
+    
+    db <- "pubmed"
+    endpoint <- "efetch"
+    webenv <- searchSummary$webenv
+    queryKey <- searchSummary$querykey
+
+    nids <- as.numeric(searchSummary$count)
+    print(paste(nids, "publications found by the search."))
+    grid <- 400
+    nloop <- ceiling(nids / grid)
+    outputFileBaseName <- outputFilename
+    for (iloop in 1:nloop) {
+      iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
+      
+      if(outputFileBaseName != ""){
+        xmloutputFilename <- paste0(
+           outputFileBaseName,
+          min(iindex),
+          "_",
+          max(iindex),
+          ".xml"
+        )
+        
+        csvoutputFilename <- paste0(
+          outputFileBaseName,
+          min(iindex),
+          "_",
+          max(iindex),
+          ".csv"
+        )
+        
+      } else {xmloutputFilename <- ""
+      csvoutputFilename <- ""}
+      
+      doc <- GetDoc(db = db, endpoint =endpoint , WebEnv = webenv, retmax = grid, queryKey=queryKey, retstart = iindex[1]-1)
+
+      if(xmloutputFilename != "") {
+        xml2::write_xml(doc, file = xmloutputFilename)
+        print(paste0("Save file ", xmloutputFilename))
+      }
+      
+      result <- RetriveMetaDataFromPubmedEfetch(doc, columns = columns)
+      
+      if(xmloutputFilename != "") {
+        write.csv(result, file = csvoutputFilename)
+        print(paste0("Save file ", csvoutputFilename))
+      }
+      
+      print(paste("To retrieve publications: ", min(iindex), "-", max(iindex)))
+      print(paste("Retrieved publications: ", nrow(result)))
+      
+      if(exists("results")) results <- rbind(results, result) else results <- result
+    }
     
     return(results)
   }
+
 
 #' RetriveMetaDataFromPmidsBatch
 #'
@@ -694,7 +801,6 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
   nids <- length(pmids)
   grid <- 400
   nloop <- ceiling(nids / grid)
-  # results <- as.data.frame(matrix(nrow = nids, ncol = 16))
 
   for (iloop in 1:nloop) {
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
@@ -711,7 +817,6 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "", email = "", output
 
     result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey, email = email, outputFilename = outputFilename, columns = columns)
     if(exists("results")) results[iindex, ] <- result else results <- result
-    
   }
   names(results) <- names(result)
   return(results)
@@ -815,7 +920,9 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "", email = "", fulltext =
   for (iloop in 1:nloop) {
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
     result <- RetriveUrlsFromPmids(pmids[iindex], apiKey = apiKey, email = email, fulltext = fulltext)
+    
     results[iindex, ] <- result
+  
   }
 
   names(results) <- names(result)
