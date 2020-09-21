@@ -4,14 +4,12 @@
 \alias{GetPmidDoiFromPmcidBatch}
 \title{GetPmidDoiFromPmcidBatch}
 \usage{
-GetPmidDoiFromPmcidBatch(pmcids, apiKey = "", email = "")
+GetPmidDoiFromPmcidBatch(pmcids, apiKey = "")
 }
 \arguments{
 \item{pmcids}{a string of character. PubMed central Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 }
 \value{
 a nx3 data frame. With three columns: pmcid, pmid, doi

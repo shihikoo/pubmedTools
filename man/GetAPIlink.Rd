@@ -10,7 +10,7 @@ GetAPIlink(
   endpoint = "esearch",
   db = "pubmed",
   id = "",
-  apiKey = "",
+  apiKey = "2ab938c0c3cfbfe6446b544c8e37c5a4e609",
   email = "shihikoo@gmail.com",
   retmode = "XML",
   term = "",

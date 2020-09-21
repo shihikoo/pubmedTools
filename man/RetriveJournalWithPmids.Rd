@@ -4,14 +4,12 @@
 \alias{RetriveJournalWithPmids}
 \title{RetriveJournalWithPmids}
 \usage{
-RetriveJournalWithPmids(pmid, apiKey = "", email = "")
+RetriveJournalWithPmids(pmid, apiKey = "")
 }
 \arguments{
 \item{pmid}{a string of character. PubMed Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 }
 \value{
 a nx3 data frame

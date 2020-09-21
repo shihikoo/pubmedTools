@@ -9,7 +9,6 @@ GetDoc(
   db = "",
   id = "",
   apiKey = "",
-  email = "",
   term = "",
   reldate = "",
   datetype = "",
@@ -29,8 +28,6 @@ GetDoc(
 \item{id}{a list of strings. UID list. Either a single UID or a UID list}
 
 \item{apiKey}{a string of characters. API Key of the user. NCBI will begin enforcing the practice of using an API key for sites that post more than 3 requests per second.}
-
-\item{email}{a string of characters. E-mail address of the E-utility user.}
 
 \item{term}{a string of characters. Entrez text query.}
 

@@ -4,14 +4,12 @@
 \alias{GetPmidsWithSearch}
 \title{GetPmidsWithSearch}
 \usage{
-GetPmidsWithSearch(searchTerm, apiKey = "", email = "")
+GetPmidsWithSearch(searchTerm, apiKey = "")
 }
 \arguments{
 \item{searchTerm}{a string of characters. search string}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 }
 \value{
 the output file names

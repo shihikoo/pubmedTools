@@ -31,7 +31,6 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc) {
 #'
 #' @param pmcid a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
 #' @param writeFileName a string of characters.
 #'
 #' @return a string: pmid
@@ -44,10 +43,9 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc) {
 GetPmidDoiFromPmcid <-
   function(pmcid,
            apiKey = "",
-           email = "",
            writeFileName = "") {
     doc <-
-      GetDoc(id=pmcid,db= "pmc", endpoint="esummary",apiKey= apiKey,email= email)
+      GetDoc(id=pmcid,db= "pmc", endpoint="esummary",apiKey= apiKey)
     if (writeFileName != "")
       xml2::write_xml(doc, file = writeFileName)
     result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
@@ -58,7 +56,6 @@ GetPmidDoiFromPmcid <-
 #'
 #' @param pmcids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
@@ -68,8 +65,7 @@ GetPmidDoiFromPmcid <-
 #'
 GetPmidDoiFromPmcidBatch <-
   function(pmcids,
-           apiKey = "",
-           email = "") {
+           apiKey = "") {
     nids <- length(pmcids)
     grid <- 500
     nloop <- ceiling(nids / grid)
@@ -80,7 +76,7 @@ GetPmidDoiFromPmcidBatch <-
         (((iloop - 1) * grid) + 1):ifelse(iloop * grid > nids, nids, iloop * grid)
       results[iindex, 1] <- pmcids[iindex]
       results[iindex, 2:3] <-
-        GetPmidDoiFromPmcid(pmcids[iindex], apiKey, email)
+        GetPmidDoiFromPmcid(pmcids[iindex], apiKey)
     }
     return(results)
   }
@@ -89,7 +85,6 @@ GetPmidDoiFromPmcidBatch <-
 #'
 #' @param pmcids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
 #' @param fileBaseName a string of character. The base name of the to be saved xml files
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
@@ -102,7 +97,6 @@ GetPmidDoiFromPmcidBatch <-
 DownloadMetaDataWithPmcidsBatch <-
   function(pmcids,
            apiKey = "",
-           email = "",
            fileBaseName = "") {
     nids <- length(pmcids)
     grid <- 500
@@ -110,7 +104,7 @@ DownloadMetaDataWithPmcidsBatch <-
     for (iloop in 1:nloop) {
         iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
       doc <-
-        GetDoc(id = pmcids[iindex], db="pmc", endpoint = "efetch",apiKey= apiKey, email = email)
+        GetDoc(id = pmcids[iindex], db="pmc", endpoint = "efetch",apiKey= apiKey)
       outputFile <-
         xml2::write_xml(doc, file = paste0(
           gsub("[.]xml", "", fileBaseName),
@@ -356,7 +350,6 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
 #' @description The number of pmcids sent should be less than 500.
 #' @param pmcid a string of character. PubMed Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
 #' @param writeFileName a string of characters. The file name you would like to download to.
 #'
 #' @return a list of metaDatarmation retrived from PubMed
@@ -369,10 +362,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc) {
 GetMetaDataFromPmcid <-
   function(pmcid,
            apiKey = "",
-           email = "",
            writeFileName = "") {
     doc <-
-      GetDoc(id=pmcid, db="pmc", endpoint = "efetch", apiKey=apiKey, email=email)
+      GetDoc(id=pmcid, db="pmc", endpoint = "efetch", apiKey=apiKey)
     if (writeFileName != "")
       xml2::write_xml(doc, file = writeFileName)
     result <- ReadMetaDataFromPmcidEfetchDoc(doc)
@@ -383,7 +375,6 @@ GetMetaDataFromPmcid <-
 #'
 #' @param pmcids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' @param email a string of characters. Your email address
 #' @param writeFileName a string of character. The base name of the to be saved xml files
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
@@ -396,7 +387,6 @@ GetMetaDataFromPmcid <-
 GetMetaDataFromPmcidBatch <-
   function(pmcids,
            apiKey = "",
-           email = "",
            writeFileName = "") {
     nids <- length(pmcids)
     grid <- 500
@@ -410,7 +400,6 @@ GetMetaDataFromPmcidBatch <-
         GetMetaDataFromPmcid(
           pmcids[iindex],
           apiKey = apiKey,
-          email = email,
           writeFileName = writeFileName
         )
       temp <- as.data.frame(temp, stringsAsFactors = F)

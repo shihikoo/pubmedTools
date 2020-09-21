@@ -4,14 +4,12 @@
 \alias{RetriveUrlsFromPmidsBatch}
 \title{RetriveUrlsFromPmidsBatch}
 \usage{
-RetriveUrlsFromPmidsBatch(pmids, apiKey = "", email = "", fulltext = TRUE)
+RetriveUrlsFromPmidsBatch(pmids, apiKey = "", fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 
 \item{fulltext}{a boolean. Whether or not only retrive full text}
 }

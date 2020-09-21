@@ -31,7 +31,7 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                         endpoint = "esearch",
                         db = "pubmed",
                         id = "",
-                        apiKey = "",
+                        apiKey = "2ab938c0c3cfbfe6446b544c8e37c5a4e609",
                         email = "shihikoo@gmail.com",
                         retmode = "XML",
                         term = "",
@@ -103,6 +103,7 @@ GetContentByPostLink <- function(link, waitTime = 0.3) {
       Sys.sleep(waitTime*attampt)
       r0 <- httr::POST(as.character(baselink), body = fineParalist)
       print("Receive Post request")
+      
       content <- httr::content(r0, "text")
     }, error = function(e) {
       print(e)
@@ -153,7 +154,6 @@ GetContentByGetLink <- function(link, waitTime = 0.3) {
 #' @param db a string of characters. Target database about which to gather statistics. Values must match https://www.ncbi.nlm.nih.gov/books/n/helpeutils/chapter2/#chapter2.chapter2_table1
 #' @param id a list of strings. UID list. Either a single UID or a UID list
 #' @param apiKey a string of characters. API Key of the user. NCBI will begin enforcing the practice of using an API key for sites that post more than 3 requests per second.
-#' @param email a string of characters. E-mail address of the E-utility user.
 #' @param term a string of characters. Entrez text query.
 #' @param reldate a string of characters, When reldate is set to an integer n, the search returns only those items that have a date specified by datetype within the last n days.
 #' @param datetype a string of characters. Type of date used to limit a search. The allowed values vary between Entrez databases, but common values are 'mdat' (modification date), 'pdat' (publication date) and 'edat' (Entrez date).
@@ -176,7 +176,6 @@ GetJson <-
             db = "",
             id = "",
             apiKey = "",
-            email = "",
             term = "",
             reldate = "",
             datetype = "",
@@ -186,7 +185,7 @@ GetJson <-
             WebEnv = "",
             cmd = "") {
     if(endpoint == "efetch") retmode = "" else retmode = "json"
-    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
+    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0.3 else waitTime = 0.4
     print(link)
@@ -204,7 +203,6 @@ GetJson <-
 #' @param db a string of characters. Target database about which to gather statistics. Values must match https://www.ncbi.nlm.nih.gov/books/n/helpeutils/chapter2/#chapter2.chapter2_table1
 #' @param id a list of strings. UID list. Either a single UID or a UID list
 #' @param apiKey a string of characters. API Key of the user. NCBI will begin enforcing the practice of using an API key for sites that post more than 3 requests per second.
-#' @param email a string of characters. E-mail address of the E-utility user.
 #' @param term a string of characters. Entrez text query.
 #' @param reldate a string of characters, When reldate is set to an integer n, the search returns only those items that have a date specified by datetype within the last n days.
 #' @param datetype a string of characters. Type of date used to limit a search. The allowed values vary between Entrez databases, but common values are 'mdat' (modification date), 'pdat' (publication date) and 'edat' (Entrez date).
@@ -228,7 +226,6 @@ GetDoc <-
     db = "",
     id = "",
     apiKey = "",
-    email = "",
     term = "",
     reldate = "",
     datetype = "",
@@ -239,9 +236,9 @@ GetDoc <-
     cmd = "",
     queryKey = "") {
     retmode <- "XML"
-    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, email = email, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode,queryKey=queryKey)
+    link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode,queryKey=queryKey)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
-    if(apiKey != "") waitTime = 0.4 else waitTime = 0.4
+    if(apiKey != "")  waitTime = 0.3 else waitTime = 0.4
     print(link)
 
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <- GetContentByGetLink(link, waitTime)

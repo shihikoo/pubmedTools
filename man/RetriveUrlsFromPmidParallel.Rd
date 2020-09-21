@@ -4,14 +4,12 @@
 \alias{RetriveUrlsFromPmidParallel}
 \title{RetriveUrlsFromPmidParallel}
 \usage{
-RetriveUrlsFromPmidParallel(pmids, apiKey = "", email = "", fulltext = TRUE)
+RetriveUrlsFromPmidParallel(pmids, apiKey = "", fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a list of numbers or characters. The number of pmid.}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }
@@ -23,6 +21,6 @@ Return NULL if none is found.
 Retrive urls from pmids
 }
 \examples{
- RetriveUrlsFromPmidParallel(c("28852052", "29041955"), "", "", TRUE)
+ RetriveUrlsFromPmidParallel(c("28852052", "29041955"), "")
 
 }

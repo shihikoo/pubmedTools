@@ -7,7 +7,6 @@
 #' @param pmids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
-#' @param email a string of characters. Your email address
 #' @param fileBaseName a string of character. The base name of the to be saved xml files
 #'
 #' @return the output file names
@@ -17,7 +16,7 @@
 #'
 #' @import jsonlite
 #'
-DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", email = "", fileBaseName = "test.json") {
+DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
   db <- "pubmed"
   nids <- length(pmids)
   grid <- 400
@@ -27,7 +26,7 @@ DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", 
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
     
     result_josn <-
-      GetJson(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey, email = email)
+      GetJson(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey)
     
     outputFile <-
       jsonlite::write_json(result_josn, path = paste0(
@@ -47,7 +46,6 @@ DownloadXMLWithPmidsBatch(
   pmids,
   apiKey = "",
   endpoint = "esummary",
-  email = "",
   fileBaseName = "test.xml"
 )
 }
@@ -57,8 +55,6 @@ DownloadXMLWithPmidsBatch(
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{endpoint}{a string of characters. The API endpoint to use. e.g. "esummary", "efetch"}
-
-\item{email}{a string of characters. Your email address}
 
 \item{fileBaseName}{a string of character. The base name of the to be saved xml files}
 }
@@ -71,7 +67,6 @@ the output file names
 #' @param pmids a string of character. PubMed central Id
 #' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
-#' @param email a string of characters. Your email address
 #' @param fileBaseName a string of character. The base name of the to be saved xml files
 #'
 #' @return the output file names
@@ -81,7 +76,7 @@ the output file names
 #'
 #' @import jsonlite
 #'
-DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", email = "", fileBaseName = "test.json") {
+DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
   db <- "pubmed"
   nids <- length(pmids)
   grid <- 400
@@ -91,7 +86,7 @@ DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", 
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
     
     result_josn <-
-      GetJson(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey, email = email)
+      GetJson(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey)
     
     outputFile <-
       jsonlite::write_json(result_josn, path = paste0(

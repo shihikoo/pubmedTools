@@ -7,9 +7,9 @@
 RetriveMetaDataFromPmidsBatch(
   pmids,
   apiKey = "",
-  email = "",
   outputFileBaseName = "",
-  columns = ""
+  columns = "",
+  grid = 200
 )
 }
 \arguments{
@@ -17,11 +17,11 @@ RetriveMetaDataFromPmidsBatch(
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
-\item{email}{a string of characters. Your email address}
-
 \item{outputFileBaseName}{a string of characters. The base name of output xml files. If default, there will be no xml saved.}
 
 \item{columns}{the columns of output requested}
+
+\item{grid}{the number of ids to run in each loop}
 }
 \value{
 a nx7 data frame. With three columns: pmcid, pmid, doi

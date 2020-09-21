@@ -4,14 +4,12 @@
 \alias{GetMetaDataFromPmcid}
 \title{GetMetaDataFromPmcid}
 \usage{
-GetMetaDataFromPmcid(pmcid, apiKey = "", email = "", writeFileName = "")
+GetMetaDataFromPmcid(pmcid, apiKey = "", writeFileName = "")
 }
 \arguments{
 \item{pmcid}{a string of character. PubMed Id}
 
 \item{apiKey}{a string of characters. The API Key obtained through NCBI account}
-
-\item{email}{a string of characters. Your email address}
 
 \item{writeFileName}{a string of characters. The file name you would like to download to.}
 }
