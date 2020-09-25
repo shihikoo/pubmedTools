@@ -13,8 +13,7 @@ install.packages("devtools")
 devtools::install_github("shihikoo/pubmedTools")
 library(pubmedTools)
 searchTerm = "pinkeye"
-pmids <- GetPmidsWithSearch(searchTerm)
-output <- RetriveMetaDataFromPmidsBatch(pmids, columns = c("pmid","pmcid", "journal",
+output <- RetriveMetaDataFromSearch(searchTerm, columns = c("pmid","pmcid", "journal",
                        "journalCountry",
                        "publicationYear",
                        "funders",
