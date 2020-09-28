@@ -191,6 +191,8 @@ GetJson <-
     
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <-  GetContentByGetLink(link, waitTime)
     if(is.null(content)) return(NULL)
+    if(jsonlite::validate(content) == FALSE) return(NULL)
+    
     result_json <- jsonlite::parse_json(content)
     
     return(result_json)
