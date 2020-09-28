@@ -46,10 +46,6 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                        queryKey = ""
                         ) {
   baseUrl <- paste0(baseUrl, endpoint, ".fcgi?")
-
-  # term <- gsub(" ", "+", term)
-  # term <- gsub("\"","%22", term)
-  # term <- gsub("#","%23",term)
   
   db <- ifelse(db != "", ifelse(endpoint == "elink",  paste0("dbfrom=",db),  paste0("db=",db)),NA)
   id <- ifelse(length(id) > 0 & all(id  != ""),  paste0("id=", paste0(id, collapse = ",") ),NA)
@@ -131,6 +127,9 @@ GetContentByGetLink <- function(link, waitTime = 0.3) {
   # httr::set_config(httr::config(http_version = 0))
   content <- NULL
   attampt <- 0
+  
+  link <- gsub("#","%23", gsub("\"","%22", gsub(" ", "+", link)))
+  
   while (is.null(content) & attampt < 10) {
     tryCatch({
       print("Send GET request")
