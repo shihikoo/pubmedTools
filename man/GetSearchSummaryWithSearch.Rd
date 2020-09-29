@@ -4,10 +4,12 @@
 \alias{GetSearchSummaryWithSearch}
 \title{GetSearchSummaryWithSearch}
 \usage{
-GetSearchSummaryWithSearch(searchTerm)
+GetSearchSummaryWithSearch(searchTerm, retmax = 1)
 }
 \arguments{
 \item{searchTerm}{a string of characters. search string}
+
+\item{retmax}{a integer as the retmax parameter, the maximum id to render}
 }
 \value{
 a list of strings - searchSummary

@@ -3,6 +3,8 @@
 #' GetSearchSummaryWithSearch
 #'
 #' @param searchTerm a string of characters. search string
+#' @param retmax a integer as the retmax parameter, the maximum id to render
+
 #'
 #' @return a list of strings - searchSummary
 #' @export
@@ -11,15 +13,17 @@
 #'
 #' @import jsonlite
 #'
-GetSearchSummaryWithSearch <- function(searchTerm) {
+GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
   db <- "pubmed"
   endpoint = "esearch"
 
   result_json <-
-    GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = 'y', retmax = 1)
+    GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = 'y', retmax = retmax)
   
   searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
-
+  
+  searchSummary$id <- paste(result_json$esearchresult$idlist, collapse = ",")
+  
   return(searchSummary)
 }
 
