@@ -4,7 +4,6 @@
 #'
 #' @param searchTerm a string of characters. search string
 #' @param retmax a integer as the retmax parameter, the maximum id to render
-
 #'
 #' @return a list of strings - searchSummary
 #' @export
@@ -27,6 +26,39 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
   return(searchSummary)
 }
 
+#' Retrive_pmid_with_TitleYear
+#' Year is optional 
+#' 
+#' @param title a string of characters. title of the publication
+#' @param year a integer. Publication year. Optional
+#'
+#' @return a list of strings - searchSummary
+#' @export
+#'
+#' @examples  
+#' title <- "Safety and efficacy of daclizumab in relapsing-remitting multiple sclerosis: 3-year results from the SELECTED open-label extension study."
+#' Retrive_pmid_with_TitleYear(title)
+#' Retrive_pmid_with_TitleYear(title, 2016)
+#'
+#'
+Retrive_pmid_with_TitleYear <- function(title, year = NULL){
+  db <- "pubmed"
+  endpoint = "esearch"
+  
+  title_term <- paste0('(',title,'[Title])')
+  
+  if(is.null(year)) term = title_term 
+  else term <- paste(title_term, paste0('("', year, '/01/01"[Date - Publication] : "', year,'/12/31"[Date - Publication])'), sep = " AND ")
+  
+  result_json <-
+    GetJson(term = term, db = db, endpoint = endpoint, usehistory = 'y', retmax = 10)
+  
+  searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
+  searchSummary$id <- paste(result_json$esearchresult$idlist, collapse = ",")
+  
+  return(searchSummary$id)
+}
+
 #' GetPmidsWithSearch
 #'
 #' @param searchTerm a string of characters. search string
@@ -35,8 +67,8 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 #' @return the output file names
 #' @export
 #'
-#' @examples term = "pinkeye"
-#' GetPmidsWithSearch(term)
+#' @examples searchTerm = "pinkeye"
+#' GetPmidsWithSearch(searchTerm)
 #'
 #' @import jsonlite
 #'
