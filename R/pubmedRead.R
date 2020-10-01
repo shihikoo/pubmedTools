@@ -31,7 +31,8 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 #' 
 #' @param title a string of characters. title of the publication
 #' @param year a integer. Publication year. Optional
-#'
+#' @param retmax a integer as the retmax parameter, the maximum id to render
+#' 
 #' @return a list of strings - searchSummary
 #' @export
 #'
@@ -41,17 +42,16 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 #' Retrive_pmid_with_TitleYear(title, 2016)
 #'
 #'
-Retrive_pmid_with_TitleYear <- function(title, year = NULL){
+Retrive_pmid_with_TitleYear <- function(title, year = NULL, retmax = 1){
   db <- "pubmed"
   endpoint = "esearch"
   
-  title_term <- paste0('(',title,'[Title])')
+  title_term <- paste0('"',title,'"')
   
-  if(is.null(year)) term = title_term 
-  else term <- paste(title_term, paste0('("', year, '/01/01"[Date - Publication] : "', year,'/12/31"[Date - Publication])'), sep = " AND ")
+  if(is.null(year)) term = title_term  else term <- paste(title_term, paste0('("', year, '/01/01"[Date - Publication] : "', year,'/12/31"[Date - Publication])'), sep = " AND ")
   
   result_json <-
-    GetJson(term = term, db = db, endpoint = endpoint, usehistory = 'y', retmax = 10)
+    GetJson(term = term, db = db, endpoint = endpoint, usehistory = 'y', retmax = retmax)
   
   searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
   searchSummary$id <- paste(result_json$esearchresult$idlist, collapse = ",")
@@ -113,7 +113,7 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
 #' DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
 #'   db <- "pubmed"
 #'   nids <- length(pmids)
-#'   grid <- 400
+#'   grid <- 500
 #'   nloop <- ceiling(nids / grid)
 #'   outputFiles <- matrix("", nrow=nloop)
 #'   for (iloop in 1:nloop) {
@@ -153,7 +153,7 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
 DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary",fileBaseName = "test.xml") {
   db <- "pubmed"
   nids <- length(pmids)
-  grid <- 400
+  grid <- 500
   nloop <- ceiling(nids / grid)
   outputFiles <- matrix("", nrow=nloop)
   for (iloop in 1:nloop) {
@@ -651,7 +651,7 @@ RetriveMetaDataFromPubmedEfetch <-
     })
 
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
-    print(dim(result))
+    # print(dim(result))
     names(result) <- c("pmid","pmcid", "journal",
                        "journalCountry",
                        "publicationYear",
@@ -754,7 +754,7 @@ RetriveMetaDataFromSearch <-
 
     nids <- as.numeric(searchSummary$count)
     print(paste(nids, "publications found by the search."))
-    grid <- 400
+    grid <- 500
     nloop <- ceiling(nids / grid)
     outputFileBaseName <- outputFilename
     for (iloop in 1:nloop) {
@@ -820,7 +820,7 @@ RetriveMetaDataFromSearch <-
 #'
 #' @import xml2
 #'
-RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseName = "", columns = "", grid = 200) {
+RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseName = "", columns = "", grid = 500) {
   db <- "pubmed"
   nids <- length(pmids)
   nloop <- ceiling(nids / grid)

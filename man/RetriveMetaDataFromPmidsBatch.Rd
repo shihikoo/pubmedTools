@@ -9,7 +9,7 @@ RetriveMetaDataFromPmidsBatch(
   apiKey = "",
   outputFileBaseName = "",
   columns = "",
-  grid = 200
+  grid = 500
 )
 }
 \arguments{

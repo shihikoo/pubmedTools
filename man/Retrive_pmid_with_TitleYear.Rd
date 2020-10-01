@@ -5,12 +5,14 @@
 \title{Retrive_pmid_with_TitleYear
 Year is optional}
 \usage{
-Retrive_pmid_with_TitleYear(title, year = NULL)
+Retrive_pmid_with_TitleYear(title, year = NULL, retmax = 1)
 }
 \arguments{
 \item{title}{a string of characters. title of the publication}
 
 \item{year}{a integer. Publication year. Optional}
+
+\item{retmax}{a integer as the retmax parameter, the maximum id to render}
 }
 \value{
 a list of strings - searchSummary
@@ -22,8 +24,8 @@ Year is optional
 \examples{
  
 title <- "Safety and efficacy of daclizumab in relapsing-remitting multiple sclerosis: 3-year results from the SELECTED open-label extension study."
-year <- 2016 
-Retrive_pmid_with_TitleYear(title, year)
+Retrive_pmid_with_TitleYear(title)
+Retrive_pmid_with_TitleYear(title, 2016)
 
 
 }

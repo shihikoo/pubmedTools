@@ -18,7 +18,7 @@ the output file names
 GetPmidsWithSearch
 }
 \examples{
-term = "pinkeye"
-GetPmidsWithSearch(term)
+searchTerm = "pinkeye"
+GetPmidsWithSearch(searchTerm)
 
 }

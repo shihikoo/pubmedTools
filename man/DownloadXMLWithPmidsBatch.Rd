@@ -19,7 +19,7 @@
 DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
   db <- "pubmed"
   nids <- length(pmids)
-  grid <- 400
+  grid <- 500
   nloop <- ceiling(nids / grid)
   outputFiles <- matrix("", nrow=nloop)
   for (iloop in 1:nloop) {
@@ -79,7 +79,7 @@ the output file names
 DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
   db <- "pubmed"
   nids <- length(pmids)
-  grid <- 400
+  grid <- 500
   nloop <- ceiling(nids / grid)
   outputFiles <- matrix("", nrow=nloop)
   for (iloop in 1:nloop) {

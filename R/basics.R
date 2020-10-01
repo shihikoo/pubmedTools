@@ -94,11 +94,11 @@ GetContentByPostLink <- function(link, waitTime = 0.3) {
       paralist <- stringr::str_split(stringr::str_split(paras,"[&]")[[1]], "=")
       fineParalist <- lapply(paralist, function(x) x[[2]])
       names(fineParalist) <- lapply(paralist, function(x) x[[1]])
-      print("Send Post request")
+      # print("Send Post request")
       # print(fineParalist)
       Sys.sleep(waitTime*attampt)
       r0 <- httr::POST(as.character(baselink), body = fineParalist)
-      print("Receive Post request")
+      # print("Receive Post request")
       
       content <- httr::content(r0, "text")
     }, error = function(e) {
@@ -132,11 +132,11 @@ GetContentByGetLink <- function(link, waitTime = 0.3) {
   
   while (is.null(content) & attampt < 10) {
     tryCatch({
-      print("Send GET request")
+      # print("Send GET request")
       iwaitTime <- waitTime*(attampt+1)
       Sys.sleep(iwaitTime)
       r0 <- httr::GET(link)
-      print("Receive GET request")
+      # print("Receive GET request")
       content <- httr::content(r0, "text")
       # print(content)
     }, error = function(e) {
@@ -187,7 +187,7 @@ GetJson <-
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, term =term, reldate =reldate, retmode = retmode, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0.3 else waitTime = 0.4
-    print(link)
+    # print(link)
     
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <-  GetContentByGetLink(link, waitTime)
     if(is.null(content)) return(NULL)
@@ -240,7 +240,7 @@ GetDoc <-
     link <- GetAPIlink(db = db, endpoint = endpoint, id = id,  apiKey = apiKey, term =term, reldate =reldate, datetype = datetype, retmax = retmax, usehistory = usehistory,retstart=retstart,WebEnv=WebEnv,cmd=cmd,retmode = retmode,queryKey=queryKey)
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "")  waitTime = 0.3 else waitTime = 0.4
-    print(link)
+    # print(link)
 
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <- GetContentByGetLink(link, waitTime)
     
