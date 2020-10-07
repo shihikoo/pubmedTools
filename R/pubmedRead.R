@@ -368,8 +368,10 @@ RetriveAbstractFromPubmedEfetch <- function(doc){
 #' @import xml2
 #'
 RetriveDOIFromPubmedEfetch <- function(doc){
-  return(RetriveXmlNodeValuefromDoc(doc,  "//ELocationID[@EIdType = 'doi']"))
-  # return(RetriveXmlNodeValuefromDoc(doc,  "//ArticleId[@IdType = 'doi']"))
+  
+  doi <- RetriveXmlNodeValuefromDoc(doc,  "//ELocationID[@EIdType = 'doi']")
+  if(is.na(doi)) doi = RetriveXmlNodeValuefromDoc(doc,  "//ArticleId[@IdType = 'doi']")
+  return(doi)
 }
 
 #' RetriveIBSNFromPubmedEfetch
