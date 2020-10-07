@@ -271,3 +271,24 @@ RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
 
   return(results)
 }
+
+#' clean_doi
+#'
+#' @param doi a doi string
+#'
+#' @return the values of the node
+#' @export
+#' @examples
+#' clean_doi("https://doi.org/10.1212/01.wnl.0000260060.60870.89")
+#'
+#' @import xml2
+#'
+clean_doi <-function(doi ){
+  doi <- tolower(doi)
+  doi <- gsub("doi:", "", doi)
+  doi <- gsub("https://", "", doi)
+  doi <- gsub("http://", "", doi)
+  doi <- gsub("dx.doi.org/","", doi)
+  doi <- gsub("doi.org/","", doi)
+  return(doi)
+}
