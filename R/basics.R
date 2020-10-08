@@ -46,7 +46,7 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
                        queryKey = ""
                         ) {
   baseUrl <- paste0(baseUrl, endpoint, ".fcgi?")
-  
+
   db <- ifelse(db != "", ifelse(endpoint == "elink",  paste0("dbfrom=",db),  paste0("db=",db)),NA)
   id <- ifelse(length(id) > 0 & all(id  != ""),  paste0("id=", paste0(id, collapse = ",") ),NA)
   apiKey <- ifelse(apiKey != "", paste0("api_key=",apiKey),NA)
@@ -62,7 +62,7 @@ GetAPIlink <- function(baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
   WebEnv <- ifelse(WebEnv != "",  paste0("WebEnv=",WebEnv),NA)
   cmd <- ifelse(cmd != "",  paste0("cmd=",cmd),NA)
   queryKey <- ifelse(queryKey != "",  paste0("query_key=",queryKey),NA)
-  
+
   paras <- paste0(na.omit(c(db, id, apiKey,email,retmode,term,reldate,datetype,retmax,usehistory,retstart,tool,WebEnv,cmd,queryKey )), collapse = "&")
 
   link <- paste0(baseUrl, paras)
@@ -99,7 +99,7 @@ GetContentByPostLink <- function(link, waitTime = 0.3) {
       Sys.sleep(waitTime*attampt)
       r0 <- httr::POST(as.character(baselink), body = fineParalist)
       # print("Receive Post request")
-      
+
       content <- httr::content(r0, "text")
     }, error = function(e) {
       print(e)
@@ -121,15 +121,15 @@ GetContentByPostLink <- function(link, waitTime = 0.3) {
 #' link <- paste0(baselink, "efetch.fcgi?db=pubmed&rettype=xml&id=26502666")
 #' content <- GetContentByGetLink(link, 0.3)
 #'
-#' @import httr 
+#' @import httr
 #'
 GetContentByGetLink <- function(link, waitTime = 0.3) {
   # httr::set_config(httr::config(http_version = 0))
   content <- NULL
   attampt <- 0
-  
+
   link <- gsub("#","%23", gsub("\"","%22", gsub(" ", "+", link)))
-  
+
   while (is.null(content) & attampt < 10) {
     tryCatch({
       # print("Send GET request")
@@ -188,13 +188,13 @@ GetJson <-
     # The waiting time to retrive data from the API. Default is set to 0.4 to ensure less than 3 API calling.
     if(apiKey != "") waitTime = 0.3 else waitTime = 0.4
     # print(link)
-    
+
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <-  GetContentByGetLink(link, waitTime)
     if(is.null(content)) return(NULL)
     if(jsonlite::validate(content) == FALSE) return(NULL)
-    
+
     result_json <- jsonlite::parse_json(content)
-    
+
     return(result_json)
   }
 
@@ -243,9 +243,9 @@ GetDoc <-
     # print(link)
 
     if(nchar(link) > 500) content <- GetContentByPostLink(link, waitTime) else content <- GetContentByGetLink(link, waitTime)
-    
+
     if(is.null(content)) return(NULL)
-    
+
     doc <- xml2::read_xml(content, encoding = "UTF-8", useInternalNodes = TRUE, trim = FALSE)
 
     return(doc)
@@ -281,8 +281,6 @@ RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
 #' @examples
 #' clean_doi("https://doi.org/10.1212/01.wnl.0000260060.60870.89")
 #'
-#' @import xml2
-#'
 clean_doi <-function(doi ){
   doi <- tolower(doi)
   doi <- gsub("doi:", "", doi)
@@ -292,3 +290,68 @@ clean_doi <-function(doi ){
   doi <- gsub("doi.org/","", doi)
   return(doi)
 }
+
+
+#' clean_title
+#' clean a title, preparing other process
+#'
+#' @param x a string
+#'
+#' @import textclean
+#' @return the distance between two strings
+#'
+#' @export
+#'
+#' @examples
+#' clean_title("I&rsquo;m testing.")
+#'
+clean_title <- function(x){
+  x <- textclean::replace_html(x)
+  x <- tolower(x)
+  # x <- gsub("&rsquo;","'",x)
+  return(x)
+}
+
+#' calculate_distance
+#' Calculate distance between two strings
+#'
+#' @param x a string
+#' @param y a string
+#'
+#' @return the distance between two strings
+#'
+#' @import stringdist
+#'
+#' @export
+#'
+#' @examples
+#' calculate_distance("I am testing.","Testing is ")
+#'
+calculate_distance <- function(x, y){
+  title1 = clean_title(x)
+  title2 = clean_title(y)
+  return(1-stringdist::stringdist(title1,title2,method='jw',p=0.1))
+}
+
+
+#' compare_year
+#' compare two publication years is the same. Sometimes, the year has one year different for the same publication in two different databases
+#'
+#' @param year1 a number
+#' @param year2 a number
+#'
+#' @return the distance between two strings
+#'
+#' @export
+#'
+#' @examples
+#' compare_year(2001,2000)
+#'
+compare_year <- function(year1, year2){
+  issame <- abs(year1 - year2) < 2
+  if(is.na(issame)) return(FALSE)
+  return(issame)
+}
+
+
+

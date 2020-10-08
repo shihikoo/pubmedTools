@@ -9,7 +9,7 @@ Description: Tools for retriving information from PubMed using NCBI public API.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: httr, xml2, stats, stringr, jsonlite, utils
+Imports: httr, xml2, stats, stringr, jsonlite, utils, stringdist, textclean
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
