@@ -18,7 +18,7 @@ a nx3 data frame. With three columns: pmcid, pmid, doi
 GetPmidDoiFromPmcidBatch
 }
 \examples{
-pmid <- GetPmidDoiFromPmcidBatch(c("5575286", "4804230"))
+GetPmidDoiFromPmcidBatch(c("5575286", "4804230"))
 
 
 }

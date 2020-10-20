@@ -4,10 +4,17 @@
 \alias{ReadMetaDataFromPmcidEfetchDoc}
 \title{ReadMetaDataFromPmcidEfetchDoc}
 \usage{
-ReadMetaDataFromPmcidEfetchDoc(doc)
+ReadMetaDataFromPmcidEfetchDoc(
+  doc,
+  columns = c("pmid", "title", "abstract", "fulltext", "studytype", "journal",
+    "publisher", "publicationDate", "authors", "emails", "affiliations",
+    "correspondingAuthors", "correspondingAuthorAffs")
+)
 }
 \arguments{
 \item{doc}{a XMLInternalDocument, a XMLAbstractDocument}
+
+\item{columns}{list of output columns}
 }
 \value{
 a nx3 data frame. With three columns: pmcid, pmid, doi
@@ -16,13 +23,15 @@ a nx3 data frame. With three columns: pmcid, pmid, doi
 ReadMetaDataFromPmcidEfetchDoc
 }
 \examples{
- doc <- GetDoc(id=c("2823164", "3324826", "3339580"), db="pmc", endpoint="efetch")
+
+
+doc <- GetDoc(id=c("2823164", "3324826", "3339580"), db="pmc", endpoint="efetch")
 ReadMetaDataFromPmcidEfetchDoc(doc)
 
-doc <- GetDoc(id=c("4812069","4405051","4804230","3892617"), db="pmc", endpoint="efetch")
+doc <- GetDoc(id=c("4812069","3892617"), db="pmc", endpoint="efetch")
 ReadMetaDataFromPmcidEfetchDoc(doc)
 
-doc <- GetDoc(id=c("5304250","4415024","4804230"), db="pmc", endpoint="efetch")
-ReadMetaDataFromPmcidEfetchDoc(doc)
+doc <- GetDoc(id=c("4405051","4415024","4804230"), db="pmc", endpoint="efetch")
+ReadMetaDataFromPmcidEfetchDoc(doc, c("pmid","title"))
 
 }

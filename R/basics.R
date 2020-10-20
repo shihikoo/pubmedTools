@@ -291,7 +291,6 @@ clean_doi <-function(doi ){
   return(doi)
 }
 
-
 #' clean_title
 #' clean a title, preparing other process
 #'

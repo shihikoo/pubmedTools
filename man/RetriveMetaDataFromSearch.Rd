@@ -20,7 +20,6 @@ a list of metaDatarmation retrived from PubMed
 RetriveMetaDataFromSearch
 }
 \examples{
- 
 searchTerm <-  "pinkeye"
 metaData <- RetriveMetaDataFromSearch(searchTerm)
 

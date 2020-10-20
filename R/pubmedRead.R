@@ -1,4 +1,3 @@
-#---------- Download  -----
 
 #' GetSearchSummaryWithSearch
 #'
@@ -8,9 +7,9 @@
 #' @return a list of strings - searchSummary
 #' @export
 #'
-#' @examples  GetSearchSummaryWithSearch("pinkeye")
+#' @examples
+#' GetSearchSummaryWithSearch("pinkeye")
 #'
-#' @import jsonlite
 #'
 GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
   db <- "pubmed"
@@ -18,25 +17,25 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 
   result_json <-
     GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = 'y', retmax = retmax)
-  
+
   searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
-  
+
   searchSummary$id <- paste(result_json$esearchresult$idlist, collapse = ",")
-  
+
   return(searchSummary)
 }
 
 #' Retrive_pmid_with_TitleYear
-#' Year is optional 
-#' 
+#' Year is optional.
+#'
 #' @param title a string of characters. title of the publication
 #' @param year a integer. Publication year. Optional
 #' @param retmax a integer as the retmax parameter, the maximum id to render
-#' 
+#'
 #' @return a list of strings - searchSummary
 #' @export
 #'
-#' @examples  
+#' @examples
 #' title <- "Safety and efficacy of daclizumab in relapsing-remitting multiple sclerosis: 3-year results from the SELECTED open-label extension study."
 #' Retrive_pmid_with_TitleYear(title)
 #' Retrive_pmid_with_TitleYear(title, 2016)
@@ -45,17 +44,17 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 Retrive_pmid_with_TitleYear <- function(title, year = NULL, retmax = 1){
   db <- "pubmed"
   endpoint = "esearch"
-  
+
   title_term <- paste0('"',title,'"')
-  
+
   if(is.null(year)) term = title_term  else term <- paste(title_term, paste0('("', year, '/01/01"[Date - Publication] : "', year,'/12/31"[Date - Publication])'), sep = " AND ")
-  
+
   result_json <-
     GetJson(term = term, db = db, endpoint = endpoint, usehistory = 'y', retmax = retmax)
-  
+
   searchSummary <- result_json$esearchresult[c("count" ,"webenv" ,"querykey")]
   searchSummary$id <- paste(result_json$esearchresult$idlist, collapse = ",")
-  
+
   return(searchSummary$id)
 }
 
@@ -76,64 +75,66 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
   db <- "pubmed"
   endpoint = "esearch"
   batchSize <- 500
-  
+
   result_json <-
     GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey,  usehistory = 'y', retmax = batchSize)
-  
+
   esearchresult <- result_json$esearchresult
-  
+
   ids <- esearchresult$idlist
   nTotal <- as.numeric(esearchresult$count)
   while(length(ids) < nTotal){
     result_json <-
       GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey, usehistory = T, retmax = batchSize, WebEnv = esearchresult$webenv, retstart = length(ids))
-    
+
     esearchresult <- result_json$esearchresult
-    
+
     ids <- c(ids, esearchresult$idlist)
   }
-  
+
   return(ids)
 }
 
-#' #' DownloadJsonWithPmidsBatch
-#' #'
-#' #' @param pmids a string of character. PubMed central Id
-#' #' @param apiKey a string of characters. The API Key obtained through NCBI account
-#' #' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
-#' #' @param fileBaseName a string of character. The base name of the to be saved xml files
-#' #'
-#' #' @return the output file names
-#' #' @export
-#' #'
-#' #' @examples DownloadJsonWithPmidsBatch(c("28852052", "29041955"), endpoint = "efetch", fileBaseName="test.json")
-#' #'
-#' #' @import jsonlite
-#' #'
-#' DownloadJsonWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "efetch", fileBaseName = "test.json") {
-#'   db <- "pubmed"
-#'   nids <- length(pmids)
-#'   grid <- 500
-#'   nloop <- ceiling(nids / grid)
-#'   outputFiles <- matrix("", nrow=nloop)
-#'   for (iloop in 1:nloop) {
-#'     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
-#'     
-#'     result_josn <-
-#'       GetJson(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey)
-#'     
-#'     outputFile <-
-#'       jsonlite::write_json(result_josn, path = paste0(
-#'         gsub("[.]json", "", fileBaseName),
-#'         min(iindex),
-#'         "_",
-#'         max(iindex),
-#'         ".json"
-#'       ))
-#'     outputFiles[iloop] <- outputFile
-#'   }
-#'   return(outputFiles)
-#' }
+#' DownloadJsonWithPmidsBatch
+#'
+#' @param pmids a string of character. PubMed central Id
+#' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
+#' @param fileBaseName a string of character. The base name of the to be saved xml files
+#'
+#' @return the output file names
+#' @export
+#'
+#' @examples
+#' DownloadJsonWithPmidsBatch(c("28852052", "29041955"), endpoint = "efetch", fileBaseName="test.json")
+#'
+#' @import jsonlite
+#'
+DownloadJsonWithPmidsBatch <- function(pmids,  endpoint = "efetch", fileBaseName = "test.json") {
+  db <- "pubmed"
+  nids <- length(pmids)
+  grid <- 500
+  nloop <- ceiling(nids / grid)
+  outputFiles <- matrix("", nrow=nloop)
+  for (iloop in 1:nloop) {
+    iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
+
+    result_josn <-
+      GetJson(id =pmids[iindex], db = db, endpoint = endpoint)
+
+    filename <- paste0(
+      gsub("[.]json", "", fileBaseName),
+      min(iindex),
+      "_",
+      max(iindex),
+      ".json"
+    )
+
+    outputFile <-
+      jsonlite::write_json(result_josn, path = filename)
+    outputFiles[iloop] <- filename
+  }
+  return(outputFiles)
+}
 
 
 #' DownloadXMLWithPmidsBatch
@@ -146,9 +147,11 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
 #' @return the output file names
 #' @export
 #'
-#' @examples DownloadXMLWithPmidsBatch(c("28852052", "29041955"), endpoint = "efetch", fileBaseName="test.xml")
+#' @examples
+#' DownloadXMLWithPmidsBatch(c("28852052", "29041955"), endpoint = "efetch", fileBaseName="test.xml")
 #'
 #' @import xml2
+#'
 #'
 DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary",fileBaseName = "test.xml") {
   db <- "pubmed"
@@ -285,7 +288,7 @@ RetriveFundersFromPubmedEfetch <- function(doc){
 RetriveAuthorsFromPubmedEfetch <- function(doc){
   nodesets <- xml2::xml_find_all(doc, "//Author")
   nodesetList <- xml2::as_list(nodesets)
-  
+
   authorList <- sapply(nodesetList, function(x) {
     author <- trimws(paste(x[["ForeName"]],  x[["LastName"]]))
   })
@@ -361,10 +364,10 @@ RetriveAbstractFromPubmedEfetch <- function(doc){
 #' @return a string
 #' @export
 #'
-#' @examples  
-#' doc <- GetDoc(id = "31524133", db = "pubmed", endpoint = "efetch")
+#' @examples
+#' doc <- GetDoc(id = "9214527", db = "pubmed", endpoint = "efetch")
 #' RetriveDOIFromPubmedEfetch(doc)
-#' 
+#'
 #' @import xml2
 #'
 RetriveDOIFromPubmedEfetch <- function(doc){
@@ -474,7 +477,7 @@ RetriveJournalWithPmids <-
         journalCountry
       ))
     })
-    
+
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
     names(result) <- c("pmid","journal","journalCountry")
     return(result)
@@ -496,10 +499,10 @@ RetriveFunderWithPmids <-
            apiKey = "") {
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
-    
+
     resultList <- sapply(nodesetList, function(x) {
       x <- xml2::as_xml_document(list(x))
-      
+
       funders <- RetriveFundersFromPubmedEfetch(x)
       pmid <- RetrivePMIDFromPubmedEfetch(x)
       return(cbind(
@@ -507,7 +510,7 @@ RetriveFunderWithPmids <-
         funders
       ))
     })
-    
+
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
     names(result) <- c("pmid","funders")
 
@@ -528,13 +531,13 @@ RetriveFunderWithPmids <-
 RetriveTiAbWithPmids <-
   function(pmid,
            apiKey = "") {
-    
+
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
-    
+
     resultList <- sapply(nodesetList, function(x) {
       x <- xml2::as_xml_document(list(x))
-  
+
       title <- RetriveTitleFromPubmedEfetch(x)
       abstract <- RetriveAbstractFromPubmedEfetch(x)
       return(cbind(
@@ -542,10 +545,10 @@ RetriveTiAbWithPmids <-
         abstract
       ))
     })
-    
+
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
     names(result) <- c("title","abstract")
-    
+
     return(result)
   }
 
@@ -566,10 +569,10 @@ RetrivePmcidWithPmids <-
     doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
 
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
-    
+
     resultList <- sapply(nodesetList, function(x) {
       x <- xml2::as_xml_document(list(x))
-      
+
       pmid <- RetrivePMIDFromPubmedEfetch(x)
       pmcid <- RetrivePMCIDFromPubmedEfetch(x)
       return(cbind(
@@ -577,10 +580,10 @@ RetrivePmcidWithPmids <-
         pmcid
       ))
     })
-    
+
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
     names(result) <- c("pmid","pmcid")
-    
+
     return(result)
   }
 
@@ -588,11 +591,11 @@ RetrivePmcidWithPmids <-
 #' RetriveMetaDataFromPubmedEfetch
 #' @param doc an XMLInternalDocument class file read from a pubmed efetch xml file
 #' @param columns a list of string of requested column names
-#' 
+#'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  
+#' @examples
 #' doc <- GetDoc(id = c("28852052", "29041955","31230181"), db = "pubmed", endpoint = "efetch")
 #' RetriveMetaDataFromPubmedEfetch(doc, columns = c("pmid","pmcid","title","doi"))
 #'
@@ -612,7 +615,7 @@ RetriveMetaDataFromPubmedEfetch <-
     resultList <- sapply(nodesetList, function(x) {
       # y <- xml2::xml_find_first(xml2::as_xml_document(x), "//MedlineCitation")
       article <- xml2::as_xml_document(list(x))
-      
+
       pmid <- RetrivePMIDFromPubmedEfetch(article)
       pmcid <- RetrivePMCIDFromPubmedEfetch(article)
       journal <- RetriveJournalFromPubmedEfetch(article)
@@ -630,7 +633,7 @@ RetriveMetaDataFromPubmedEfetch <-
       pages <- RetrivePagesFromPubmedEfetch(article)
       keywords <- paste(RetriveKeywordsFromPubmedEfetch(article),collapse = "; ")
       doi <- RetriveDOIFromPubmedEfetch(article)
-        
+
       return(cbind(
         pmid,
         pmcid,
@@ -665,7 +668,7 @@ RetriveMetaDataFromPubmedEfetch <-
                        "issue",
                        "pages", "keywords","doi")
     if(length(columns) == 1 && all(columns == "")) columns <- names(result)
-    
+
     return(result[, intersect(names(result), columns)])
   }
 
@@ -678,7 +681,7 @@ RetriveMetaDataFromPubmedEfetch <-
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples 
+#' @examples
 #' baselink <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 #' link <- paste0(baselink, "?db=pubmed&id=20704052&retmode=xml")
 #' RetriveMetaDataFromPubmedEfetchParallel(link)
@@ -721,7 +724,7 @@ RetriveMetaDataFromPmids <-
     }
     results <- merge(data.frame(pmid = pmid)
                      , RetriveMetaDataFromPubmedEfetch(doc, columns = columns),by="pmid" )
-    
+
     if(outputFilename != "") {
     print(paste0("Completed retrive results for", outputFilename))
     }
@@ -734,11 +737,11 @@ RetriveMetaDataFromPmids <-
 #' @param searchTerm a string of character. search term
 #' @param columns the columns of output requested
 #' @param outputFilename a string of characters. Output XML file name
-#' 
+#'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
-#' @examples  
+#' @examples
 #' searchTerm <-  "pinkeye"
 #' metaData <- RetriveMetaDataFromSearch(searchTerm)
 #'
@@ -747,7 +750,7 @@ RetriveMetaDataFromPmids <-
 RetriveMetaDataFromSearch <-
   function(searchTerm, columns = "", outputFilename="") {
     searchSummary <- GetSearchSummaryWithSearch(searchTerm)
-    
+
     db <- "pubmed"
     endpoint <- "efetch"
     webenv <- searchSummary$webenv
@@ -760,7 +763,7 @@ RetriveMetaDataFromSearch <-
     outputFileBaseName <- outputFilename
     for (iloop in 1:nloop) {
       iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
-      
+
       if(outputFileBaseName != ""){
         xmloutputFilename <- paste0(
            outputFileBaseName,
@@ -769,7 +772,7 @@ RetriveMetaDataFromSearch <-
           max(iindex),
           ".xml"
         )
-        
+
         csvoutputFilename <- paste0(
           outputFileBaseName,
           min(iindex),
@@ -777,30 +780,30 @@ RetriveMetaDataFromSearch <-
           max(iindex),
           ".csv"
         )
-        
+
       } else {xmloutputFilename <- ""
       csvoutputFilename <- ""}
-      
+
       doc <- GetDoc(db = db, endpoint =endpoint , WebEnv = webenv, retmax = grid, queryKey=queryKey, retstart = iindex[1]-1)
 
       if(xmloutputFilename != "") {
         xml2::write_xml(doc, file = xmloutputFilename)
         print(paste0("Save file ", xmloutputFilename))
       }
-      
+
       result <- RetriveMetaDataFromPubmedEfetch(doc, columns = columns)
-      
+
       if(xmloutputFilename != "") {
         utils::write.csv(result, file = csvoutputFilename)
         print(paste0("Save file ", csvoutputFilename))
       }
-      
+
       print(paste("To retrieve publications: ", min(iindex), "-", max(iindex)))
       print(paste("Retrieved publications: ", nrow(result)))
-      
+
       if(exists("results")) results <- rbind(results, result) else results <- result
     }
-    
+
     return(results)
   }
 
@@ -813,7 +816,7 @@ RetriveMetaDataFromSearch <-
 #' @param outputFileBaseName a string of characters. The base name of output xml files. If default, there will be no xml saved.
 #' @param columns the columns of output requested
 #' @param grid the number of ids to run in each loop
-#' 
+#'
 #' @return a nx7 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
@@ -840,11 +843,11 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseNam
     } else {outputFilename <- ""}
 
     result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey,  outputFilename = outputFilename, columns = columns)
-    
+
     # if(exists("results")) results[iindex, ] <- result else results <- result
-    
+
     if(exists("results")) results <- rbind(results, result) else results <- result
-    
+
   }
   names(results) <- names(result)
   return(results)
@@ -871,7 +874,7 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseNam
 RetriveUrlFromPubmedElink <- function(doc, category = "All") {
   RetriveUrlFromPubmedElinkSingle <- function(node){
     # node <- xml2::as_xml_document(list(x))
-    
+
     pmid <- node["Id"][[1]][[1]]
     objUrls <- node["ObjUrl"]
     myData <- as.data.frame(t(sapply(objUrls, function(x){
@@ -879,19 +882,19 @@ RetriveUrlFromPubmedElink <- function(doc, category = "All") {
       category <- x["Category"][[1]]
       return(cbind(url,category))
     })), stringsAsFactors = F, drop=F, colnames = c("Url", "Category"))
-    
+
     names(myData) <- c("Url", "Category")
-    
+
     if (category != "All") {
       index <- which(myData$Category == category)
       if (length(index) == 0) return(NULL)
       myData <- myData[index,]
     }
-    
+
     return(data.frame(pmid = pmid, url = paste0(myData$Url, collapse = ";"), stringsAsFactors = F))
   }
   nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//IdUrlSet"))
-  
+
   results <- sapply(nodesetList, RetriveUrlFromPubmedElinkSingle)
   return(as.data.frame(t(results)))
 }
@@ -946,9 +949,9 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "",fulltext = TRUE) {
   for (iloop in 1:nloop) {
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
     result <- RetriveUrlsFromPmids(pmids[iindex], apiKey = apiKey,  fulltext = fulltext)
-    
+
     results[iindex, ] <- result
-  
+
   }
 
   names(results) <- names(result)

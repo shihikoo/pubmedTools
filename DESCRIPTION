@@ -1,7 +1,7 @@
 Package: pubmedTools
 Type: Package
 Title: Tools for retriving information from PubMed database
-Version: 1.1.0
+Version: 1.2.0
 Author: person("Jing", "Liao", email = "shihikoo@gmail.com",
                   role = c("aut", "cre"))
 Maintainer: shihikoo <shihikoo@gmail.com>
@@ -9,7 +9,7 @@ Description: Tools for retriving information from PubMed using NCBI public API.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: httr, xml2, stats, stringr, jsonlite, utils, stringdist, textclean
+Imports: httr, xml2, stats, stringr, jsonlite, utils, stringdist, textclean, data.table
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

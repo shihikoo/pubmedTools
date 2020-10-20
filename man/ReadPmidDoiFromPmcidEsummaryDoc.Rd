@@ -16,7 +16,7 @@ extract pmid and doi for all articles in the doc
 ReadPmidDoiFromPmcidEsummaryDoc
 }
 \examples{
- doc <- GetDoc(id=c("5575286", "4804230"), db="pmc", endpoint="esummary")
+doc <- GetDoc(id=c("5575286", "4804230"), db="pmc", endpoint="esummary")
 ReadPmidDoiFromPmcidEsummaryDoc(doc)
 
 }

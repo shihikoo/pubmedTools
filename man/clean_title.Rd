@@ -9,8 +9,6 @@ clean_title(x)
 }
 \arguments{
 \item{x}{a string}
-
-\item{y}{a string}
 }
 \value{
 the distance between two strings

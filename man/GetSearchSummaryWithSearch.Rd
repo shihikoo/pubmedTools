@@ -18,6 +18,7 @@ a list of strings - searchSummary
 GetSearchSummaryWithSearch
 }
 \examples{
- GetSearchSummaryWithSearch("pinkeye")
+GetSearchSummaryWithSearch("pinkeye")
+
 
 }
