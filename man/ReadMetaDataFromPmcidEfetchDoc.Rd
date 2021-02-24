@@ -24,6 +24,8 @@ ReadMetaDataFromPmcidEfetchDoc
 }
 \examples{
 
+doc <- GetDoc(id=c("2823164"), db="pmc", endpoint="efetch")
+ReadMetaDataFromPmcidEfetchDoc(doc)
 
 doc <- GetDoc(id=c("2823164", "3324826", "3339580"), db="pmc", endpoint="efetch")
 ReadMetaDataFromPmcidEfetchDoc(doc)

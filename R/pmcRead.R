@@ -537,6 +537,55 @@ extractStudyTypeFromPmcidEfetchDoc <- function(article){
   return(paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article ,"//article-categories//subj-group//subject"))), collapse = "; "))
 }
 
+#' ReadMetaDataFromPMCnxml
+#'
+#' @param link a XMLInternalDocument, a XMLAbstractDocument
+#' @param columns list of output columns
+#'
+#' @return a 1x3 data frame. With three columns: pmcid, pmid, doi
+#' @export
+#' @import xml2
+#' 
+ReadMetaDataFromPMCnxml <- function(link, columns = c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")) {
+  doc <- xml2::read_xml(link)
+  nodeset <- (xml2::as_list(xml2::xml_find_all(doc, "//article")))[[1]]
+  nodeset <- nodeset[which(names(nodeset) != "")]
+  article <- xml2::as_xml_document(list(nodeset))
+    
+    pmid <- extractPmidFromPmcidEfetchDoc(article)
+    title <- extractTitleFromPmcidEfetchDoc(article)
+    abstract <- extractAbstractFromPmcidEfetchDoc(article)
+    fulltext <- extractFullTextFromPmcidEfetchDoc(article)
+    studytype <- extractStudyTypeFromPmcidEfetchDoc(article)
+    journal <- extractJournalFromPmcidEfetchDoc(article)
+    publisher <-extractPublisherFromPmcidEfetchDoc(article)
+    publicationDate <- extractEpubDateFromPmcidEfetchDoc(article)
+    authors <- extractAuthorsFromPmcidEfetchDoc(article)
+    emails <- extractEmailsFromPmcidEfetchDoc(article)
+    affiliations <- extractAffliationFromPmcidEfetchDoc(article)
+    correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article)
+    correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article)
+    
+    results <- cbind(
+      pmid,
+      title,
+      abstract,
+      fulltext,
+      studytype,
+      journal,
+      publisher,
+      publicationDate,
+      authors,
+      emails,
+      affiliations,
+      correspondingAuthors,
+      correspondingAuthorAffs)
+  
+  colnames(results) <- c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")
+  rownames(results) <- NULL
+  return(results[,columns])
+}
+
 #' ReadMetaDataFromPmcidEfetchDoc
 #'
 #' @param doc a XMLInternalDocument, a XMLAbstractDocument
@@ -547,7 +596,9 @@ extractStudyTypeFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #'
-#'
+#' doc <- GetDoc(id=c("2823164"), db="pmc", endpoint="efetch")
+#' ReadMetaDataFromPmcidEfetchDoc(doc)
+#' 
 #' doc <- GetDoc(id=c("2823164", "3324826", "3339580"), db="pmc", endpoint="efetch")
 #' ReadMetaDataFromPmcidEfetchDoc(doc)
 #'
@@ -557,7 +608,7 @@ extractStudyTypeFromPmcidEfetchDoc <- function(article){
 #' doc <- GetDoc(id=c("4405051","4415024","4804230"), db="pmc", endpoint="efetch")
 #' ReadMetaDataFromPmcidEfetchDoc(doc, c("pmid","title"))
 #'
-#' @import xml2 stringr stats
+#' @import xml2 
 #'
 ReadMetaDataFromPmcidEfetchDoc <- function(doc, columns = c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")) {
   nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//article"))
