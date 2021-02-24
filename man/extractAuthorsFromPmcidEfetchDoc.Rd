@@ -7,7 +7,7 @@
 extractAuthorsFromPmcidEfetchDoc(article)
 }
 \arguments{
-\item{doc}{a XMLInternalDocument, a XMLAbstractDocument}
+\item{article}{a XMLInternalDocument, a XMLAbstractDocument}
 }
 \value{
 a string of characters.

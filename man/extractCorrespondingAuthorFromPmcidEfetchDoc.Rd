@@ -7,7 +7,7 @@
 extractCorrespondingAuthorFromPmcidEfetchDoc(article)
 }
 \arguments{
-\item{doc}{a XMLInternalDocument, a XMLAbstractDocument}
+\item{article}{a XMLInternalDocument, a XMLAbstractDocument}
 }
 \value{
 a string of characters.
@@ -16,12 +16,12 @@ a string of characters.
 extractCorrespondingAuthorFromPmcidEfetchDoc
 }
 \examples{
-doc <- GetDoc(id="3324826", db="pmc", endpoint="efetch")
+doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
 extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 
 doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
 extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 
-doc <- GetDoc(id=c("2823164"), db="pmc", endpoint="efetch")
+doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
 extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 }

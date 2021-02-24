@@ -6,7 +6,6 @@
 \usage{
 RetriveMetaDataFromPmidsBatch(
   pmids,
-  apiKey = "",
   outputFileBaseName = "",
   columns = "",
   grid = 500
@@ -14,8 +13,6 @@ RetriveMetaDataFromPmidsBatch(
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}
-
-\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{outputFileBaseName}{a string of characters. The base name of output xml files. If default, there will be no xml saved.}
 

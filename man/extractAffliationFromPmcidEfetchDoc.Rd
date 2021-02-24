@@ -4,10 +4,12 @@
 \alias{extractAffliationFromPmcidEfetchDoc}
 \title{extractAffliationFromPmcidEfetchDoc}
 \usage{
-extractAffliationFromPmcidEfetchDoc(article)
+extractAffliationFromPmcidEfetchDoc(article, affIds = "all_affiliations")
 }
 \arguments{
-\item{doc}{a XMLInternalDocument, a XMLAbstractDocument}
+\item{article}{a XMLInternalDocument, a XMLAbstractDocument}
+
+\item{affIds}{affiliation id to extract. Default is "all_affiliatins", which gives all the affiliations}
 }
 \value{
 a string of characters.

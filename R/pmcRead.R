@@ -31,7 +31,6 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc) {
 #' GetPmidDoiFromPmcid
 #'
 #' @param pmcid a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param writeFileName a string of characters.
 #'
 #' @return a string: pmid
@@ -44,10 +43,9 @@ ReadPmidDoiFromPmcidEsummaryDoc <- function(doc) {
 #'
 GetPmidDoiFromPmcid <-
   function(pmcid,
-           apiKey = "",
            writeFileName = "") {
     doc <-
-      GetDoc(id=pmcid,db= "pmc", endpoint="esummary",apiKey= apiKey)
+      GetDoc(id=pmcid,db= "pmc", endpoint="esummary")
     if (writeFileName != "")
       xml2::write_xml(doc, file = writeFileName)
     result <- ReadPmidDoiFromPmcidEsummaryDoc(doc)
@@ -57,7 +55,6 @@ GetPmidDoiFromPmcid <-
 #' GetPmidDoiFromPmcidBatch
 #'
 #' @param pmcids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
@@ -67,8 +64,7 @@ GetPmidDoiFromPmcid <-
 #'
 #'
 GetPmidDoiFromPmcidBatch <-
-  function(pmcids,
-           apiKey = "") {
+  function(pmcids) {
     nids <- length(pmcids)
     grid <- 500
     nloop <- ceiling(nids / grid)
@@ -79,7 +75,7 @@ GetPmidDoiFromPmcidBatch <-
         (((iloop - 1) * grid) + 1):ifelse(iloop * grid > nids, nids, iloop * grid)
       results[iindex, 1] <- pmcids[iindex]
       results[iindex, 2:3] <-
-        GetPmidDoiFromPmcid(pmcids[iindex], apiKey)
+        GetPmidDoiFromPmcid(pmcids[iindex])
     }
     return(results)
   }
@@ -87,7 +83,6 @@ GetPmidDoiFromPmcidBatch <-
 #' DownloadMetaDataWithPmcidsBatch
 #'
 #' @param pmcids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param fileBaseName a string of character. The base name of the to be saved xml files
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
@@ -99,7 +94,6 @@ GetPmidDoiFromPmcidBatch <-
 #'
 DownloadMetaDataWithPmcidsBatch <-
   function(pmcids,
-           apiKey = "",
            fileBaseName = "") {
     nids <- length(pmcids)
     grid <- 500
@@ -107,7 +101,7 @@ DownloadMetaDataWithPmcidsBatch <-
     for (iloop in 1:nloop) {
       iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
       doc <-
-        GetDoc(id = pmcids[iindex], db="pmc", endpoint = "efetch",apiKey= apiKey)
+        GetDoc(id = pmcids[iindex], db="pmc", endpoint = "efetch")
       outputFile <-
         xml2::write_xml(doc, file = paste0(
           gsub("[.]xml", "", fileBaseName),
@@ -125,7 +119,6 @@ DownloadMetaDataWithPmcidsBatch <-
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string: publicationDate
-#' @export
 #'
 #' @examples
 #' doc <- GetDoc(id="5304250",db= "pmc", endpoint="efetch")
@@ -136,6 +129,7 @@ DownloadMetaDataWithPmcidsBatch <-
 #' extractEpubDateFromPmcidEfetchDoc(doc)
 #'
 #' @import xml2
+#' @export
 #'
 extractEpubDateFromPmcidEfetchDoc <- function(article){
   epubYear <-
@@ -171,7 +165,7 @@ extractEpubDateFromPmcidEfetchDoc <- function(article){
 
 #' extractPmidFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
@@ -187,7 +181,7 @@ extractPmidFromPmcidEfetchDoc <- function(article){
 
 #' extractJournalFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
@@ -203,7 +197,7 @@ extractJournalFromPmcidEfetchDoc <- function(article){
 
 #' extractPublisherFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
@@ -219,7 +213,7 @@ extractPublisherFromPmcidEfetchDoc <- function(article){
 
 #' extractEmailsFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
@@ -237,7 +231,8 @@ extractEmailsFromPmcidEfetchDoc <- function(article){
 
 #' extractAffliationFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
+#' @param affIds affiliation id to extract. Default is "all_affiliatins", which gives all the affiliations
 #'
 #' @return a string of characters.
 #' @export
@@ -254,39 +249,53 @@ extractEmailsFromPmcidEfetchDoc <- function(article){
 #' doc <- GetDoc(id="3324826", db="pmc", endpoint="efetch")
 #' extractAffliationFromPmcidEfetchDoc(doc)
 #'
-extractAffliationFromPmcidEfetchDoc <- function(article ){
-  nodes <- xml2::xml_find_all(article,  "//aff")
+extractAffliationFromPmcidEfetchDoc <- function(article, affIds = "all_affiliations"){
+  
+  if(affIds[[1]] == "all_affiliations") {
+    nodes <- xml2::xml_find_all(article,  "//aff") 
+    } else{
+      nodes <- lapply(affIds, function(x)
+    xml2::xml_find_all(article,  paste0("//aff[@id='", x, "']"))
+    # xml2::xml_find_all(article,  paste0("//aff[@id='", affIds, "']"))
+      )
+      }
+  
   if(length(nodes) == 0 ) return(NA)
 
   affList <- lapply(nodes, function(node){
-    affid <- xml2::xml_attr(node, "id")
-    if(is.na(affid)) affid <- sapply(xml2::xml_children(node), xml2::xml_attr, "id")
+    # affid <- xml2::xml_attr(node, "id")
+    # if(is.na(affid)) affid <- sapply(xml2::xml_children(node), xml2::xml_attr, "id")
 
     childValues <- sapply(xml2::xml_children(node), xml2::xml_text)
     index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues) & lapply(childValues,nchar) > 1)
-    if(length(index) > 0)  return(list(affiliation = paste(childValues[index], collapse = ", "), affid = affid))
+    # if(length(index) > 0)  return(list(affiliation = paste(childValues[index], collapse = ", "), affid = affid))
+    if(length(index) > 0)  return(paste(childValues[index], collapse = ", "))
 
-    affiliationCandidates <- trimws(xml2::xml_text(node))
-    if(length(affid) > length(affiliationCandidates)) affiliationCandidates <- sapply(stringi::stri_split(affiliationCandidates, regex = "[;] (and)?"), trimws)
-    index <- which(!is.na(affiliationCandidates) & affiliationCandidates != "" & !grepl("^[0-9]+$", affiliationCandidates) & lapply(affiliationCandidates, nchar) > 1)
+    # affiliationCandidates <-
+    affiliationCandidates <- sapply(stringi::stri_split(xml2::xml_text(node), regex = "[;] (and)?"), trimws)
+    # index <- which(!is.na(affiliationCandidates) & affiliationCandidates != "" & !grepl("^[0-9]+$", affiliationCandidates) & lapply(affiliationCandidates, nchar) > 1)
+    affiliationCandidates <- affiliationCandidates[!is.na(affiliationCandidates) & affiliationCandidates != "" & !grepl("^[0-9]+$", affiliationCandidates) & lapply(affiliationCandidates, nchar) > 1]
 
-    affiliation <- gsub("^[0-9]","", affiliationCandidates[index])
+    # affiliationCandidates <- gsub("^[0-9]","", affiliationCandidates[index])
+    index <- !grepl("^[a-zA-Z]", affiliationCandidates)
+    if(length(index) > 0) affiliationCandidates[index] <- sapply(affiliationCandidates[index], function(x) substr(x,start=2,nchar(x)))
 
-    index <- !grepl("^[a-zA-Z]", affiliation)
-    if(length(index) > 0) affiliation[index] <- sapply(affiliation[index], function(x) substr(x,start=2,nchar(x)))
-
-    index <- which(!is.na(affiliation) & affiliation != "" & lapply(affiliation,nchar) > 1)
-    if(length(index) > 0)  return(list(affiliation = affiliation, affid = affid))
-
-    return(list(aff = NA, affid=NA))
+    # index <- which(!is.na(affiliation) & affiliation != "" & lapply(affiliation,nchar) > 1)
+    # if(length(index) > 0)  return(list(affiliation = affiliation, affid = affid))
+    # return(list(aff = NA, affid=NA))
+    # if(length(index) > 0)  return(list(affiliation = affiliation, affid = affid))
+return(affiliationCandidates[!is.na(affiliationCandidates) & affiliationCandidates != "" & lapply(affiliationCandidates,nchar) > 1])
+    # return(NA)
   })
-  options(warn = -1)
-  return(as.data.frame(data.table::rbindlist(affList, use.names = T, fill = T), stringsAsFactors = F))
+
+  affiliations <- paste(unlist(affList), collapse = "; ")
+  # options(warn = -1)
+  return(affiliations)
 }
 
 #' extractAuthorsFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
@@ -313,19 +322,19 @@ extractAuthorsFromPmcidEfetchDoc <- function(article){
 
 #' extractCorrespondingAuthorFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
 #'
 #' @examples
-#' doc <- GetDoc(id="3324826", db="pmc", endpoint="efetch")
+#' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
 #' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
 #' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 #'
-#' doc <- GetDoc(id=c("2823164"), db="pmc", endpoint="efetch")
+#' doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
 #' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 
 extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
@@ -340,103 +349,137 @@ extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
 
     correspondingAuthorsParentNodes <- extractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
 
-    correspondingAuthorsList <- lapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
+    correspondingAuthorsList <- sapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
       correspondingAuthorsParentNode <- xml2::as_xml_document(correspondingAuthorsParentNode)
       name <- paste(stats::na.omit(xml2::xml_text(xml2::xml_find_all(correspondingAuthorsParentNode, "//name//given-names"))), stats::na.omit( xml2::xml_text(xml2::xml_find_all(correspondingAuthorsParentNode, "//name//surname"))))
 
-      affNodes <- xml2::xml_find_all(correspondingAuthorsParentNode, "xref")
-      if(length(affNodes) == 0)  return(c(name = name, affIds = NA))
-
-      index <- which(sapply(affNodes, function(x)  xml2::xml_attr(x,"ref-type") == "aff") == T)
-      if(length(index) == 0)  return(c(name = name, affIds = NA))
-
-      affNodes <- affNodes[index]
-      affIds <- unique(stats::na.omit(sapply(affNodes,  function(y) xml2::xml_attr(y, "rid"))))
-
-      if(is.na(name) || is.null(name) || length(name) ==0 || name =="") name <- NA
-      if(length(affIds) ==0  || all(affIds =="")) affIds <- NA
-
-      return(list(name = name, affIds = affIds))
+      if(is.na(name) || is.null(name) || length(name) == 0 || name =="") name <- NA
+      return(name)
     })
 
-    correspondingAuthors <- sapply(correspondingAuthorsList, function(x){
-      authorslist <- x["name"]
-      if(length(authorslist) == 0) return(NA)
-      if(all(is.na(authorslist))) return(NA)
-      authors <- stats::na.omit(unique(paste0(authorslist, collapse = "; ")))
+    correspondingAuthors <- paste0(unlist(correspondingAuthorsList), collapse = "; ")
 
-      if(length(authors) == 0 || all(authors == "")) authors <- NA
+    # First we extract corresponding authors. if Corresponding author can't be found, we put all authors to be corresponding author
+    if(correspondingAuthors == "" | is.na(correspondingAuthors)) correspondingAuthors <- extractAuthorsFromPmcidEfetchDoc(article)
 
-      return(unlist(authors))
-    })
+    return(correspondingAuthors)
+}
 
-    corespondingAuthorAffIds <- sapply(correspondingAuthorsList, function(x){
-      affidlist <- x[grep("affIds", names(x))][[1]]
-      if(length(affidlist) == 0) return(NA)
-      if(all(is.na(affidlist))) return(NA)
-      affids <- stats::na.omit(unique(affidlist))
-      # if(length(affids) == 0 || all(affids == "")) affids <- NA
-      return(affids)
-    })
+#' extractCorrespondingAuthorIdFromPmcidEfetchDoc
+#'
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
+#'
+#' @return a string of characters.
+#' @export
+#'
+#' @examples
+#' doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
+#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#'
+#' doc <- GetDoc(id="3892617", db="pmc", endpoint="efetch")
+#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#'
+#' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
+#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#'
+#' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
+#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#'
+extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
+  extractCorrespondingAuthorNodesFromPmcidEfetchDoc <- function(article){
+    correspondingAuthorsNode_schema1 <- xml2::xml_find_all(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
+    if (!is.null(correspondingAuthorsNode_schema1) && length(correspondingAuthorsNode_schema1) > 0) return(lapply(correspondingAuthorsNode_schema1, function(x)x))
 
-    corespondingAuthorAffIds <- unique(stats::na.omit(unlist(corespondingAuthorAffIds)))
+    correspondingAuthorsNode_schema2 <- xml2::xml_find_all(article, "//xref[@ref-type='corresp']")     #schema 2:"4405051"
+    if (!is.null(correspondingAuthorsNode_schema2) && length(correspondingAuthorsNode_schema2) > 0) return(lapply(correspondingAuthorsNode_schema2, function(x) xml2::xml_parent(x)))
+    return(list(name = NA, affIds = NA))
+  }
 
-    return(list(name = correspondingAuthors, affIds = corespondingAuthorAffIds))
+  correspondingAuthorsParentNodes <- extractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
+
+  correspondingAuthorIdsList <- sapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
+    correspondingAuthorsParentNode <- xml2::as_xml_document(correspondingAuthorsParentNode)
+
+    affNodes <- xml2::xml_find_all(correspondingAuthorsParentNode, "xref")
+    if(length(affNodes) == 0)  return(NA)
+
+    index <- which(sapply(affNodes, function(x)  xml2::xml_attr(x,"ref-type") == "aff") == T)
+    if(length(index) == 0)  return(NA) else affNodes <- affNodes[index]
+
+    affIds <- unique(stats::na.omit(sapply(affNodes,  function(y) xml2::xml_attr(y, "rid"))))
+    if(length(affIds) ==0  || all(affIds =="")) return(NA)
+
+    affIds <- strsplit(affIds, " ")
+
+    return(affIds)
+  })
+
+  corespondingAuthorAffIds <- unique(stats::na.omit(c(unlist(correspondingAuthorIdsList))))
+
+  if(any(is.null(corespondingAuthorAffIds), length(corespondingAuthorAffIds) == 0,corespondingAuthorAffIds == "")) corespondingAuthorAffIds <- NA
+  return(corespondingAuthorAffIds)
 }
 
 #' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters.
 #' @export
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc, "au1")
+#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 #'
-extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article,  correspondingAuthorAffIds){
-  if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
-  correspondingAuthorAffs <-
-    paste(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
-      node <-xml2::xml_find_all(article,  paste0("//aff[@id='", x, "']"))
-      if(length(node) > 0 ) node <- node[[1]] else return(NA)
-      childValues <- sapply(xml2::xml_children(node), xml2::xml_text)
-      index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues) & !nchar(childValues) ==1 )
-      if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
-    })),
-    collapse = "; ")
+#' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
+#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
+#'
+#'
+extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
+  correspondingAuthorAffIds <- extractCorrespondingAuthorIdFromPmcidEfetchDoc(article)
+  if(is.na(correspondingAuthorAffIds[[1]]))  return(extractAffliationFromPmcidEfetchDoc(article))
 
-  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
+  extractCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
+    if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
+    nodes <-xml2::xml_find_all(article,  paste0("//aff"))
+    correspondingAuthorAffs <-
+      paste(stats::na.omit(sapply(nodes, function(node) {
+        childrenNodes <- xml2::xml_children(node)
+
+        index <- which(sapply(childrenNodes, function(x) {
+          xml2::xml_attr(x, "id") %in% correspondingAuthorAffIds
+        }) == T)
+
+        childValues <- sapply(childrenNodes[index+1], xml2::xml_text)
+        index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues) & !length(childValues) ==1 )
+        if(length(index) > 0)  return(paste(childValues[index], collapse = "; ")) else return(NA)
+      })),
+      collapse = "; ")
+
+    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
+    return(correspondingAuthorAffs)
+  }
+
+  correspondingAuthorAffs <- extractAffliationFromPmcidEfetchDoc(article, affIds = correspondingAuthorAffIds)
+    # paste(unique(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
+    #   node <-xml2::xml_find_all(article,  paste0("//aff[@id='", x, "']"))
+    #   if(length(node) > 0 ) node <- node[[1]] else return(NA)
+    #   childValues <- sapply(xml2::xml_children(node), xml2::xml_text)
+    #   index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues) & !nchar(childValues) ==1 )
+    #   if(length(index) > 0)  return(paste(childValues[index], collapse = ", ")) else return(NA)
+    # })),
+    # collapse = "; "))
+
+  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- extractCorrespondindAuthorAffliationSchema3(article,  correspondingAuthorAffIds)
+
+  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- extractAffliationFromPmcidEfetchDoc(article)
 
   return(correspondingAuthorAffs)
 }
-
-extractCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
-  if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
-  nodes <-xml2::xml_find_all(article,  paste0("//aff"))
-  correspondingAuthorAffs <-
-    paste(stats::na.omit(sapply(nodes, function(node) {
-      childrenNodes <- xml2::xml_children(node)
-
-      index <- which(sapply(childrenNodes, function(x) {
-        xml2::xml_attr(x, "id") %in% correspondingAuthorAffIds
-      }) == T)
-
-      childValues <- sapply(childrenNodes[index+1], xml2::xml_text)
-      index <- which(!is.na(childValues) & childValues != "" & !grepl("^[0-9]+$", childValues) & !length(childValues) ==1 )
-      if(length(index) > 0)  return(paste(childValues[index], collapse = "; ")) else return(NA)
-    })),
-    collapse = "; ")
-
-  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "")correspondingAuthorAffs <- NA
-  return(correspondingAuthorAffs)
-}
-
 
 #' extractTitleFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters. title
 #' @export
@@ -451,7 +494,7 @@ extractTitleFromPmcidEfetchDoc <- function(article){
 
 #' extractAbstractFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters. abstract
 #' @export
@@ -466,7 +509,7 @@ extractAbstractFromPmcidEfetchDoc <- function(article){
 
 #' extractFullTextFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters. fulltext
 #' @export
@@ -481,7 +524,7 @@ extractFullTextFromPmcidEfetchDoc <- function(article){
 
 #' extractStudyTypeFromPmcidEfetchDoc
 #'
-#' @param doc a XMLInternalDocument, a XMLAbstractDocument
+#' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
 #' @return a string of characters. study type
 #' @export
@@ -532,32 +575,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc, columns = c("pmid", "title", "ab
     publicationDate <- extractEpubDateFromPmcidEfetchDoc(article)
     authors <- extractAuthorsFromPmcidEfetchDoc(article)
     emails <- extractEmailsFromPmcidEfetchDoc(article)
-    affiliationsFull <- extractAffliationFromPmcidEfetchDoc(article)
-    affiliations <- paste(unique(stats::na.omit(affiliationsFull$affiliation)), collapse = "; ")
-
-    # There are logic hierarchy of the existance of the properties.
-    # First we extract corresponding authors. if Corresponding author can't be found, we put all authors to be corresponding author
-    correspondingAuthorsFull <- extractCorrespondingAuthorFromPmcidEfetchDoc(article)
-    correspondingAuthors <- paste(unique(stats::na.omit(correspondingAuthorsFull$name)), collapse = "; ")
-    if(correspondingAuthors == "" | is.na(correspondingAuthors)) correspondingAuthors <- authors
-    # find the corresponding author affiliations
-    if(!is.na(affiliationsFull))  {
-      correspondingAuthorAffList <- affiliationsFull$affiliation[affiliationsFull$affid %in% correspondingAuthorsFull$affIds]
-    correspondingAuthorAffs <- paste(unique(stats::na.omit(correspondingAuthorAffList)), collapse = "; ")
-    if(correspondingAuthorAffs == "") correspondingAuthorAffs <- NA
-}
-    if(!is.na(affiliations) & is.na(correspondingAuthorAffs)){
-      # if(any(!is.na(correspondingAuthorAffIds))) correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article, correspondingAuthorAffIds)
-
-      # if the corresponding aff ids exists but correspondingAuthorAffs
-      if (is.na(correspondingAuthorAffs) & !is.na(correspondingAuthorAffIds)) correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article, strsplit(correspondingAuthorAffIds, " "))
-
-      if (is.na(correspondingAuthorAffs) & !is.na(correspondingAuthorAffIds)) correspondingAuthorAffs <- extractCorrespondindAuthorAffliationSchema3(article, correspondingAuthorAffIds)
-    }
-
-    # sometimes, there is no marking on corresponding author because all authors are corresponding author
-    if (is.na(correspondingAuthorAffs)) correspondingAuthorAffs <- affiliations
-
+    affiliations <- extractAffliationFromPmcidEfetchDoc(article)
+    correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article)
+    correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article)
 
     return(cbind(
       pmid,
@@ -584,7 +604,6 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc, columns = c("pmid", "title", "ab
 #'
 #' @description The number of pmcids sent should be less than 500.
 #' @param pmcid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param writeFileName a string of characters. The file name you would like to download to.
 #'
 #' @return a list of metaDatarmation retrived from PubMed
@@ -596,10 +615,9 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc, columns = c("pmid", "title", "ab
 #'
 GetMetaDataFromPmcid <-
   function(pmcid,
-           apiKey = "",
            writeFileName = "") {
     doc <-
-      GetDoc(id=pmcid, db="pmc", endpoint = "efetch", apiKey=apiKey)
+      GetDoc(id=pmcid, db="pmc", endpoint = "efetch")
     if (writeFileName != "")
       xml2::write_xml(doc, file = writeFileName)
     result <- ReadMetaDataFromPmcidEfetchDoc(doc)
@@ -609,24 +627,23 @@ GetMetaDataFromPmcid <-
 #' GetMetaDataFromPmcidBatch
 #'
 #' @param pmcids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param writeFileName a string of character. The base name of the to be saved xml files
 #'
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #'
-#' @examples GetMetaDataFromPmcidBatch(c("5575286", "4804230"))
+#' @examples 
+#' GetMetaDataFromPmcidBatch(c("5575286", "4804230"))
 #'
 #' @import xml2
 #'
 GetMetaDataFromPmcidBatch <-
   function(pmcids,
-           apiKey = "",
            writeFileName = "") {
     nids <- length(pmcids)
     grid <- 500
     nloop <- ceiling(nids / grid)
-    results <- as.data.frame(matrix(nrow = nids, ncol = 10, ""), stringsAsFactors = F)
+    results <- as.data.frame(matrix(nrow = nids, ncol = 14, ""), stringsAsFactors = F)
     for (iloop in 1:nloop) {
       iindex <-
         (((iloop - 1) * grid) + 1):ifelse(iloop * grid > nids, nids, iloop * grid)
@@ -634,7 +651,6 @@ GetMetaDataFromPmcidBatch <-
       temp <-
         GetMetaDataFromPmcid(
           pmcids[iindex],
-          apiKey = apiKey,
           writeFileName = writeFileName
         )
       temp <- as.data.frame(temp, stringsAsFactors = F)

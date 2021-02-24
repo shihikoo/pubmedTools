@@ -22,9 +22,9 @@ Retrive_pmid_with_TitleYear
 Year is optional.
 }
 \examples{
-title <- "Safety and efficacy of daclizumab in relapsing-remitting multiple sclerosis: 3-year results from the SELECTED open-label extension study."
+title <- "Causes of Acute Stroke: A Patterned Approach."
 Retrive_pmid_with_TitleYear(title)
-Retrive_pmid_with_TitleYear(title, 2016)
+Retrive_pmid_with_TitleYear(title, 2019)
 
 
 }

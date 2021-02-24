@@ -4,12 +4,10 @@
 \alias{DownloadMetaDataWithPmcidsBatch}
 \title{DownloadMetaDataWithPmcidsBatch}
 \usage{
-DownloadMetaDataWithPmcidsBatch(pmcids, apiKey = "", fileBaseName = "")
+DownloadMetaDataWithPmcidsBatch(pmcids, fileBaseName = "")
 }
 \arguments{
 \item{pmcids}{a string of character. PubMed central Id}
-
-\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{fileBaseName}{a string of character. The base name of the to be saved xml files}
 }

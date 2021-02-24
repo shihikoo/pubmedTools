@@ -6,15 +6,12 @@
 \usage{
 DownloadXMLWithPmidsBatch(
   pmids,
-  apiKey = "",
   endpoint = "esummary",
   fileBaseName = "test.xml"
 )
 }
 \arguments{
 \item{pmids}{a string of character. PubMed central Id}
-
-\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{endpoint}{a string of characters. The API endpoint to use. e.g. "esummary", "efetch"}
 

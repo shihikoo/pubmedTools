@@ -36,9 +36,9 @@ GetSearchSummaryWithSearch <- function(searchTerm, retmax = 1) {
 #' @export
 #'
 #' @examples
-#' title <- "Safety and efficacy of daclizumab in relapsing-remitting multiple sclerosis: 3-year results from the SELECTED open-label extension study."
+#' title <- "Causes of Acute Stroke: A Patterned Approach."
 #' Retrive_pmid_with_TitleYear(title)
-#' Retrive_pmid_with_TitleYear(title, 2016)
+#' Retrive_pmid_with_TitleYear(title, 2019)
 #'
 #'
 Retrive_pmid_with_TitleYear <- function(title, year = NULL, retmax = 1){
@@ -61,7 +61,6 @@ Retrive_pmid_with_TitleYear <- function(title, year = NULL, retmax = 1){
 #' GetPmidsWithSearch
 #'
 #' @param searchTerm a string of characters. search string
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return the output file names
 #' @export
@@ -71,13 +70,13 @@ Retrive_pmid_with_TitleYear <- function(title, year = NULL, retmax = 1){
 #'
 #' @import jsonlite
 #'
-GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
+GetPmidsWithSearch <- function(searchTerm) {
   db <- "pubmed"
   endpoint = "esearch"
   batchSize <- 500
 
   result_json <-
-    GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey,  usehistory = 'y', retmax = batchSize)
+    GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = 'y', retmax = batchSize)
 
   esearchresult <- result_json$esearchresult
 
@@ -85,7 +84,7 @@ GetPmidsWithSearch <- function(searchTerm, apiKey = "") {
   nTotal <- as.numeric(esearchresult$count)
   while(length(ids) < nTotal){
     result_json <-
-      GetJson(term = searchTerm, db = db, endpoint = endpoint, apiKey = apiKey, usehistory = T, retmax = batchSize, WebEnv = esearchresult$webenv, retstart = length(ids))
+      GetJson(term = searchTerm, db = db, endpoint = endpoint, usehistory = T, retmax = batchSize, WebEnv = esearchresult$webenv, retstart = length(ids))
 
     esearchresult <- result_json$esearchresult
 
@@ -140,7 +139,6 @@ DownloadJsonWithPmidsBatch <- function(pmids,  endpoint = "efetch", fileBaseName
 #' DownloadXMLWithPmidsBatch
 #'
 #' @param pmids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param endpoint a string of characters. The API endpoint to use. e.g. "esummary", "efetch"
 #' @param fileBaseName a string of character. The base name of the to be saved xml files
 #'
@@ -153,7 +151,7 @@ DownloadJsonWithPmidsBatch <- function(pmids,  endpoint = "efetch", fileBaseName
 #' @import xml2
 #'
 #'
-DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary",fileBaseName = "test.xml") {
+DownloadXMLWithPmidsBatch <- function(pmids, endpoint = "esummary",fileBaseName = "test.xml") {
   db <- "pubmed"
   nids <- length(pmids)
   grid <- 500
@@ -163,7 +161,7 @@ DownloadXMLWithPmidsBatch <- function(pmids, apiKey = "", endpoint = "esummary",
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
 
     doc <-
-      GetDoc(id =pmids[iindex], db = db, endpoint = endpoint, apiKey = apiKey)
+      GetDoc(id =pmids[iindex], db = db, endpoint = endpoint)
     filename <- paste0(
       gsub("[.]xml", "", fileBaseName),
       min(iindex),
@@ -451,7 +449,6 @@ RetriveKeywordsFromPubmedEfetch <- function(doc){
 #' RetriveJournalWithPmids
 #'
 #' @param pmid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return a nx3 data frame
 #' @export
@@ -460,9 +457,8 @@ RetriveKeywordsFromPubmedEfetch <- function(doc){
 #' @import xml2
 #'
 RetriveJournalWithPmids <-
-  function(pmid,
-           apiKey = "") {
-    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
+  function(pmid) {
+    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch")
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
 
     resultList <- sapply(nodesetList, function(x) {
@@ -486,7 +482,6 @@ RetriveJournalWithPmids <-
 #' RetriveFunderWithPmids
 #'
 #' @param pmid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
@@ -495,9 +490,8 @@ RetriveJournalWithPmids <-
 #' @import xml2
 #'
 RetriveFunderWithPmids <-
-  function(pmid,
-           apiKey = "") {
-    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
+  function(pmid) {
+    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch")
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
 
     resultList <- sapply(nodesetList, function(x) {
@@ -520,7 +514,6 @@ RetriveFunderWithPmids <-
 #' RetriveTiAbWithPmids
 #'
 #' @param pmid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
@@ -529,10 +522,9 @@ RetriveFunderWithPmids <-
 #' @import xml2
 #'
 RetriveTiAbWithPmids <-
-  function(pmid,
-           apiKey = "") {
+  function(pmid) {
 
-    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
+    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch")
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
 
     resultList <- sapply(nodesetList, function(x) {
@@ -555,7 +547,6 @@ RetriveTiAbWithPmids <-
 #' RetrivePmcidWithPmids
 #'
 #' @param pmid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
@@ -564,9 +555,8 @@ RetriveTiAbWithPmids <-
 #' @import xml2
 #'
 RetrivePmcidWithPmids <-
-  function(pmid,
-           apiKey = "") {
-    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
+  function(pmid) {
+    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch")
 
     nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
 
@@ -702,7 +692,6 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files, columns = "") {
 #' RetriveMetaDataFromPmids
 #'
 #' @param pmid a string of character. PubMed Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param outputFilename a string of characters. Output XML file name
 #' @param columns the columns of output requested
 
@@ -714,9 +703,8 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files, columns = "") {
 #' @import xml2
 #'
 RetriveMetaDataFromPmids <-
-  function(pmid,
-           apiKey = "", outputFilename = "", columns = "") {
-    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch", apiKey = apiKey)
+  function(pmid, outputFilename = "", columns = "") {
+    doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "efetch")
 
     if(outputFilename != "") {
       outputFile <- xml2::write_xml(doc, file = outputFilename)
@@ -812,7 +800,6 @@ RetriveMetaDataFromSearch <-
 #'
 #' @description this function is good for retrive data directly
 #' @param pmids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param outputFileBaseName a string of characters. The base name of output xml files. If default, there will be no xml saved.
 #' @param columns the columns of output requested
 #' @param grid the number of ids to run in each loop
@@ -824,7 +811,7 @@ RetriveMetaDataFromSearch <-
 #'
 #' @import xml2
 #'
-RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseName = "", columns = "", grid = 500) {
+RetriveMetaDataFromPmidsBatch <- function(pmids, outputFileBaseName = "", columns = "", grid = 500) {
   db <- "pubmed"
   nids <- length(pmids)
   nloop <- ceiling(nids / grid)
@@ -842,7 +829,7 @@ RetriveMetaDataFromPmidsBatch <- function(pmids, apiKey = "",  outputFileBaseNam
       )
     } else {outputFilename <- ""}
 
-    result <- RetriveMetaDataFromPmids(pmids[iindex], apiKey = apiKey,  outputFilename = outputFilename, columns = columns)
+    result <- RetriveMetaDataFromPmids(pmids[iindex], outputFilename = outputFilename, columns = columns)
 
     # if(exists("results")) results[iindex, ] <- result else results <- result
 
@@ -904,7 +891,6 @@ RetriveUrlFromPubmedElink <- function(doc, category = "All") {
 #' @description Get related url links from given pmid. The number of pmids sent should be less than 500.
 #'
 #' @param pmid a number or a string of characters. The number of pmid.
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T
@@ -916,8 +902,8 @@ RetriveUrlFromPubmedElink <- function(doc, category = "All") {
 #'
 #' @import xml2
 #'
-RetriveUrlsFromPmids <- function(pmid, apiKey = "", fulltext = TRUE) {
-  doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "elink", apiKey = apiKey, cmd = "llinks")
+RetriveUrlsFromPmids <- function(pmid, fulltext = TRUE) {
+  doc <- GetDoc(id = pmid, db = "pubmed", endpoint = "elink", cmd = "llinks")
   if (fulltext == T) category <- "Full Text Sources" else category = "All"
 
   urls <- RetriveUrlFromPubmedElink(doc, category)
@@ -930,7 +916,6 @@ RetriveUrlsFromPmids <- function(pmid, apiKey = "", fulltext = TRUE) {
 #'
 #' @description this function is good for retrive data directly
 #' @param pmids a string of character. PubMed central Id
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param fulltext a boolean. Whether or not only retrive full text
 #' @return a nx3 data frame. With three columns: pmcid, pmid, doi
 #' @export
@@ -939,7 +924,7 @@ RetriveUrlsFromPmids <- function(pmid, apiKey = "", fulltext = TRUE) {
 #'
 #' @import xml2
 #'
-RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "",fulltext = TRUE) {
+RetriveUrlsFromPmidsBatch <- function(pmids, fulltext = TRUE) {
   db <- "pubmed"
   nids <- length(pmids)
   grid <- 200
@@ -948,7 +933,7 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "",fulltext = TRUE) {
 
   for (iloop in 1:nloop) {
     iindex <- (((iloop - 1) * grid) + 1) : ifelse(iloop * grid > nids, nids, iloop * grid)
-    result <- RetriveUrlsFromPmids(pmids[iindex], apiKey = apiKey,  fulltext = fulltext)
+    result <- RetriveUrlsFromPmids(pmids[iindex],  fulltext = fulltext)
 
     results[iindex, ] <- result
 
@@ -963,7 +948,6 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "",fulltext = TRUE) {
 #' Retrive urls from pmids
 #'
 #' @param pmids a list of numbers or characters. The number of pmid.
-#' @param apiKey a string of characters. The API Key obtained through NCBI account
 #' @param fulltext a boolean. If TRUE, function only searches for full text link
 #'
 #' @return a list of characters. A list of urls. Return fulltext urls if fulltext parameter is T.
@@ -972,12 +956,11 @@ RetriveUrlsFromPmidsBatch <- function(pmids, apiKey = "",fulltext = TRUE) {
 #'
 #' @examples  RetriveUrlsFromPmidParallel(c("28852052", "29041955"), "")
 #'
-RetriveUrlsFromPmidParallel <- function(pmids, apiKey = "", fulltext = TRUE) {
+RetriveUrlsFromPmidParallel <- function(pmids, fulltext = TRUE) {
   urlFromPMIDs <-
     as.data.frame(t(sapply(
       pmids,
       RetriveUrlsFromPmids,
-      apiKey = apiKey,
       fulltext = fulltext
     )))
   return(urlFromPMIDs)

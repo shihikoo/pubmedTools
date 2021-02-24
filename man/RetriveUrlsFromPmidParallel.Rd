@@ -4,12 +4,10 @@
 \alias{RetriveUrlsFromPmidParallel}
 \title{RetriveUrlsFromPmidParallel}
 \usage{
-RetriveUrlsFromPmidParallel(pmids, apiKey = "", fulltext = TRUE)
+RetriveUrlsFromPmidParallel(pmids, fulltext = TRUE)
 }
 \arguments{
 \item{pmids}{a list of numbers or characters. The number of pmid.}
-
-\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 
 \item{fulltext}{a boolean. If TRUE, function only searches for full text link}
 }

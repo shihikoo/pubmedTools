@@ -4,12 +4,10 @@
 \alias{RetriveFunderWithPmids}
 \title{RetriveFunderWithPmids}
 \usage{
-RetriveFunderWithPmids(pmid, apiKey = "")
+RetriveFunderWithPmids(pmid)
 }
 \arguments{
 \item{pmid}{a string of character. PubMed Id}
-
-\item{apiKey}{a string of characters. The API Key obtained through NCBI account}
 }
 \value{
 a list of metaDatarmation retrived from PubMed

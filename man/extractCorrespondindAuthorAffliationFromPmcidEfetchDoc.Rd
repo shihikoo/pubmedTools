@@ -4,13 +4,10 @@
 \alias{extractCorrespondindAuthorAffliationFromPmcidEfetchDoc}
 \title{extractCorrespondindAuthorAffliationFromPmcidEfetchDoc}
 \usage{
-extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(
-  article,
-  correspondingAuthorAffIds
-)
+extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article)
 }
 \arguments{
-\item{doc}{a XMLInternalDocument, a XMLAbstractDocument}
+\item{article}{a XMLInternalDocument, a XMLAbstractDocument}
 }
 \value{
 a string of characters.
@@ -20,6 +17,10 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc
 }
 \examples{
 doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc, "au1")
+extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
+
+doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
+extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
+
 
 }
