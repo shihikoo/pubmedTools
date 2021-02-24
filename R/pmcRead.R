@@ -563,8 +563,8 @@ ReadMetaDataFromPMCnxml <- function(link, columns = c("pmid", "title", "abstract
     authors <- extractAuthorsFromPmcidEfetchDoc(article)
     emails <- extractEmailsFromPmcidEfetchDoc(article)
     affiliations <- extractAffliationFromPmcidEfetchDoc(article)
-    correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article)
-    correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article)
+    if(!is.na(affiliations)) correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article) else correspondingAuthors <- NA
+    if(!is.na(affiliations)) correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article) else correspondingAuthorAffs <- NA
     
     results <- cbind(
       pmid,
