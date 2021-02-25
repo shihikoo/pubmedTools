@@ -22,5 +22,4 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
 extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 
-
 }

@@ -250,7 +250,7 @@ extractEmailsFromPmcidEfetchDoc <- function(article){
 #' extractAffliationFromPmcidEfetchDoc(doc)
 #'
 extractAffliationFromPmcidEfetchDoc <- function(article, affIds = "all_affiliations"){
-  
+  if(all(is.na(affIds))) return(NA)
   if(affIds[[1]] == "all_affiliations") {
     nodes <- xml2::xml_find_all(article,  "//aff") 
     } else{
@@ -437,14 +437,13 @@ extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
 #' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
 #' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 #'
-#'
 extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
   
   correspondingAuthorAffIds <- extractCorrespondingAuthorIdFromPmcidEfetchDoc(article)
-  if(is.na(correspondingAuthorAffIds[[1]]))  return(extractAffliationFromPmcidEfetchDoc(article))
+  if(all(is.na(correspondingAuthorAffIds)))  return(extractAffliationFromPmcidEfetchDoc(article))
 
   extractCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
-    if(is.na(correspondingAuthorAffIds)) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
+    if(all(is.na(correspondingAuthorAffIds))) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
     nodes <-xml2::xml_find_all(article,  paste0("//aff"))
     correspondingAuthorAffs <-
       paste(stats::na.omit(sapply(nodes, function(node) {
