@@ -5,14 +5,14 @@
 \title{ReadMetaDataFromPMCnxml}
 \usage{
 ReadMetaDataFromPMCnxml(
-  link,
+  xmlFilePathFull,
   columns = c("pmid", "title", "abstract", "fulltext", "studytype", "journal",
     "publisher", "publicationDate", "authors", "emails", "affiliations",
     "correspondingAuthors", "correspondingAuthorAffs")
 )
 }
 \arguments{
-\item{link}{a XMLInternalDocument, a XMLAbstractDocument}
+\item{xmlFilePathFull}{a xml file path}
 
 \item{columns}{list of output columns}
 }

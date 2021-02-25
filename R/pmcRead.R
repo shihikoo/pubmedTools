@@ -114,7 +114,7 @@ DownloadMetaDataWithPmcidsBatch <-
     return(nloop)
   }
 
-#' extractEpubDateFromPmcidEfetchDoc
+#' ExtractEpubDateFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -122,16 +122,16 @@ DownloadMetaDataWithPmcidsBatch <-
 #'
 #' @examples
 #' doc <- GetDoc(id="5304250",db= "pmc", endpoint="efetch")
-#' extractEpubDateFromPmcidEfetchDoc(doc)
+#' ExtractEpubDateFromPmcidEfetchDoc(doc)
 #' doc <- GetDoc(id="4415024",db= "pmc", endpoint="efetch")
-#' extractEpubDateFromPmcidEfetchDoc(doc)
+#' ExtractEpubDateFromPmcidEfetchDoc(doc)
 #' doc <- GetDoc(id="4804230",db= "pmc", endpoint="efetch")
-#' extractEpubDateFromPmcidEfetchDoc(doc)
+#' ExtractEpubDateFromPmcidEfetchDoc(doc)
 #'
 #' @import xml2
 #' @export
 #'
-extractEpubDateFromPmcidEfetchDoc <- function(article){
+ExtractEpubDateFromPmcidEfetchDoc <- function(article){
   epubYear <-
     RetriveXmlNodeValuefromDoc(article,  "//article-meta//pub-date[@pub-type='epub']//year")
   epubMonth <-
@@ -163,7 +163,7 @@ extractEpubDateFromPmcidEfetchDoc <- function(article){
 }
 
 
-#' extractPmidFromPmcidEfetchDoc
+#' ExtractPmidFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -172,14 +172,14 @@ extractEpubDateFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="2823164", db="pmc", endpoint="efetch")
-#' extractPmidFromPmcidEfetchDoc(doc)
+#' ExtractPmidFromPmcidEfetchDoc(doc)
 #'
-extractPmidFromPmcidEfetchDoc <- function(article){
+ExtractPmidFromPmcidEfetchDoc <- function(article){
   output <- unique(RetriveXmlNodeValuefromDoc(article,  "//article-id[@pub-id-type='pmid']"))
   if(length(output) >0 ) return(output[[1]]) else return(output)
 }
 
-#' extractJournalFromPmcidEfetchDoc
+#' ExtractJournalFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -188,14 +188,14 @@ extractPmidFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="2823164", db="pmc", endpoint="efetch")
-#' extractJournalFromPmcidEfetchDoc(doc)
+#' ExtractJournalFromPmcidEfetchDoc(doc)
 #'
-extractJournalFromPmcidEfetchDoc <- function(article){
+ExtractJournalFromPmcidEfetchDoc <- function(article){
   output <- unique(RetriveXmlNodeValuefromDoc(article,  "//journal-title"))
   if(length(output > 0)) return(output[[1]]) else return(output) }
 
 
-#' extractPublisherFromPmcidEfetchDoc
+#' ExtractPublisherFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -204,14 +204,14 @@ extractJournalFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="2823164", db="pmc", endpoint="efetch")
-#' extractPublisherFromPmcidEfetchDoc(doc)
+#' ExtractPublisherFromPmcidEfetchDoc(doc)
 #'
-extractPublisherFromPmcidEfetchDoc <- function(article){
+ExtractPublisherFromPmcidEfetchDoc <- function(article){
   output <- unique(RetriveXmlNodeValuefromDoc(article,  "//publisher"))
   if(length(output) >0 ) return(output[[1]]) else return(output)
   }
 
-#' extractEmailsFromPmcidEfetchDoc
+#' ExtractEmailsFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -220,16 +220,16 @@ extractPublisherFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="2823164", db="pmc", endpoint="efetch")
-#' extractEmailsFromPmcidEfetchDoc(doc)
+#' ExtractEmailsFromPmcidEfetchDoc(doc)
 #'
-extractEmailsFromPmcidEfetchDoc <- function(article){
+ExtractEmailsFromPmcidEfetchDoc <- function(article){
   emailList <- unique(stringr::str_extract_all(RetriveXmlNodeValuefromDoc(article,  "//email"), "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+[.][a-zA-Z]{2,}", simplify = T))
   validIndex <- which(!is.na(emailList) & emailList != "")
   if(length(validIndex) > 0)    emails <- paste0(emailList[validIndex], collapse = "; ") else emails <- NA
   return(emails)
 }
 
-#' extractAffliationFromPmcidEfetchDoc
+#' ExtractAffliationFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #' @param affIds affiliation id to extract. Default is "all_affiliatins", which gives all the affiliations
@@ -241,15 +241,15 @@ extractEmailsFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id=c("2823164"), db="pmc", endpoint="efetch")
-#' extractAffliationFromPmcidEfetchDoc(doc)
+#' ExtractAffliationFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
-#' extractAffliationFromPmcidEfetchDoc(doc)
+#' ExtractAffliationFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="3324826", db="pmc", endpoint="efetch")
-#' extractAffliationFromPmcidEfetchDoc(doc)
+#' ExtractAffliationFromPmcidEfetchDoc(doc)
 #'
-extractAffliationFromPmcidEfetchDoc <- function(article, affIds = "all_affiliations"){
+ExtractAffliationFromPmcidEfetchDoc <- function(article, affIds = "all_affiliations"){
   if(all(is.na(affIds))) return(NA)
   if(affIds[[1]] == "all_affiliations") {
     nodes <- xml2::xml_find_all(article,  "//aff") 
@@ -293,7 +293,7 @@ return(affiliationCandidates[!is.na(affiliationCandidates) & affiliationCandidat
   return(affiliations)
 }
 
-#' extractAuthorsFromPmcidEfetchDoc
+#' ExtractAuthorsFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -302,9 +302,9 @@ return(affiliationCandidates[!is.na(affiliationCandidates) & affiliationCandidat
 #'
 #' @examples
 #' doc <- GetDoc(id="2823164", db="pmc", endpoint="efetch")
-#' extractAuthorsFromPmcidEfetchDoc(doc)
+#' ExtractAuthorsFromPmcidEfetchDoc(doc)
 #'
-extractAuthorsFromPmcidEfetchDoc <- function(article){
+ExtractAuthorsFromPmcidEfetchDoc <- function(article){
   authorsNode <- xml2::xml_find_all(article, "//contrib[@contrib-type='author']//name")
   if (is.null(authorsNode)| length(authorsNode) == 0)  return(NA)
 
@@ -320,7 +320,7 @@ extractAuthorsFromPmcidEfetchDoc <- function(article){
   return(authors)
 }
 
-#' extractCorrespondingAuthorFromPmcidEfetchDoc
+#' ExtractCorrespondingAuthorFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -329,16 +329,16 @@ extractAuthorsFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorFromPmcidEfetchDoc(doc)
 
-extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
-  extractCorrespondingAuthorNodesFromPmcidEfetchDoc <- function(article){
+ExtractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
+  ExtractCorrespondingAuthorNodesFromPmcidEfetchDoc <- function(article){
     correspondingAuthorsNode_schema1 <- xml2::xml_find_all(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     if (!is.null(correspondingAuthorsNode_schema1) && length(correspondingAuthorsNode_schema1) > 0) return(lapply(correspondingAuthorsNode_schema1, function(x)x))
 
@@ -347,9 +347,9 @@ extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
     return(NA)
   }
 
-    correspondingAuthorsParentNodes <- extractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
+    correspondingAuthorsParentNodes <- ExtractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
 
-    if(is.na(correspondingAuthorsParentNodes)) return(extractAuthorsFromPmcidEfetchDoc(article))
+    if(is.na(correspondingAuthorsParentNodes)) return(ExtractAuthorsFromPmcidEfetchDoc(article))
     
     correspondingAuthorsList <- sapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
       correspondingAuthorsParentNode <- xml2::as_xml_document(correspondingAuthorsParentNode)
@@ -362,12 +362,12 @@ extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
     correspondingAuthors <- paste0(unlist(correspondingAuthorsList), collapse = "; ")
 
     # First we extract corresponding authors. if Corresponding author can't be found, we put all authors to be corresponding author
-    if(correspondingAuthors == "" | is.na(correspondingAuthors)) correspondingAuthors <- extractAuthorsFromPmcidEfetchDoc(article)
+    if(correspondingAuthors == "" | is.na(correspondingAuthors)) correspondingAuthors <- ExtractAuthorsFromPmcidEfetchDoc(article)
 
     return(correspondingAuthors)
 }
 
-#' extractCorrespondingAuthorIdFromPmcidEfetchDoc
+#' ExtractCorrespondingAuthorIdFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -376,19 +376,19 @@ extractCorrespondingAuthorFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="3339580", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="3892617", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
-#' extractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondingAuthorIdFromPmcidEfetchDoc(doc)
 #'
-extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
-  extractCorrespondingAuthorNodesFromPmcidEfetchDoc <- function(article){
+ExtractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
+  ExtractCorrespondingAuthorNodesFromPmcidEfetchDoc <- function(article){
     correspondingAuthorsNode_schema1 <- xml2::xml_find_all(article, "//contrib[@corresp='yes']")    #schema 1:"3324826"
     if (!is.null(correspondingAuthorsNode_schema1) && length(correspondingAuthorsNode_schema1) > 0) return(lapply(correspondingAuthorsNode_schema1, function(x)x))
 
@@ -397,7 +397,7 @@ extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
     return(NA)
   }
 
-  correspondingAuthorsParentNodes <- extractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
+  correspondingAuthorsParentNodes <- ExtractCorrespondingAuthorNodesFromPmcidEfetchDoc(article)
   if(is.na(correspondingAuthorsParentNodes[[1]])) return(NA)
   
   correspondingAuthorIdsList <- sapply(correspondingAuthorsParentNodes, function(correspondingAuthorsParentNode){
@@ -423,7 +423,7 @@ extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
   return(corespondingAuthorAffIds)
 }
 
-#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc
+#' ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -432,17 +432,17 @@ extractCorrespondingAuthorIdFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 #'
 #' doc <- GetDoc(id="4415024", db="pmc", endpoint="efetch")
-#' extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
+#' ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc(doc)
 #'
-extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
+ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
   
-  correspondingAuthorAffIds <- extractCorrespondingAuthorIdFromPmcidEfetchDoc(article)
-  if(all(is.na(correspondingAuthorAffIds)))  return(extractAffliationFromPmcidEfetchDoc(article))
+  correspondingAuthorAffIds <- ExtractCorrespondingAuthorIdFromPmcidEfetchDoc(article)
+  if(all(is.na(correspondingAuthorAffIds)))  return(ExtractAffliationFromPmcidEfetchDoc(article))
 
-  extractCorrespondindAuthorAffliationSchema2 <- function(article,  correspondingAuthorAffIds){
+  ExtractCorrespondindAuthorAffliationSchema2 <- function(article,  correspondingAuthorAffIds){
     if(all(is.na(correspondingAuthorAffIds))) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
     nodes <-xml2::xml_find_all(article,  paste0("//aff"))
     correspondingAuthorAffs <-
@@ -466,7 +466,7 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
   }
 
   # for PMC6813468
-  # extractCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
+  # ExtractCorrespondindAuthorAffliationSchema3 <- function(article,  correspondingAuthorAffIds){
   #   if(all(is.na(correspondingAuthorAffIds))) return(NA) else correspondingAuthorAffIds <- unlist(correspondingAuthorAffIds)
   #   nodes <-xml2::xml_find_all(article,  paste0("//aff"))
   #   correspondingAuthorAffs <-
@@ -487,7 +487,7 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
   #   return(correspondingAuthorAffs)
   # }
   
-  correspondingAuthorAffs <- extractAffliationFromPmcidEfetchDoc(article, affIds = correspondingAuthorAffIds)
+  correspondingAuthorAffs <- ExtractAffliationFromPmcidEfetchDoc(article, affIds = correspondingAuthorAffIds)
     # paste(unique(stats::na.omit(sapply(correspondingAuthorAffIds, function(x) {
     #   node <-xml2::xml_find_all(article,  paste0("//aff[@id='", x, "']"))
     #   if(length(node) > 0 ) node <- node[[1]] else return(NA)
@@ -497,18 +497,18 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
     # })),
     # collapse = "; "))
 
-  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- extractCorrespondindAuthorAffliationSchema2(article,  correspondingAuthorAffIds)
+  if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- ExtractCorrespondindAuthorAffliationSchema2(article,  correspondingAuthorAffIds)
   
-  # if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- extractCorrespondindAuthorAffliationSchema3(article,  correspondingAuthorAffIds)
+  # if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- ExtractCorrespondindAuthorAffliationSchema3(article,  correspondingAuthorAffIds)
   tryCatch(
-    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- extractAffliationFromPmcidEfetchDoc(article)
+    if(is.null(correspondingAuthorAffs) || is.na(correspondingAuthorAffs) || length(correspondingAuthorAffs) == 0 || correspondingAuthorAffs == "") correspondingAuthorAffs <- ExtractAffliationFromPmcidEfetchDoc(article)
   )
 
 
   return(correspondingAuthorAffs)
 }
 
-#' extractTitleFromPmcidEfetchDoc
+#' ExtractTitleFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -517,13 +517,13 @@ extractCorrespondindAuthorAffliationFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractTitleFromPmcidEfetchDoc(doc)
+#' ExtractTitleFromPmcidEfetchDoc(doc)
 #'
-extractTitleFromPmcidEfetchDoc <- function(article){
+ExtractTitleFromPmcidEfetchDoc <- function(article){
   return(RetriveXmlNodeValuefromDoc(article, "//title-group//article-title")[[1]])
 }
 
-#' extractAbstractFromPmcidEfetchDoc
+#' ExtractAbstractFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -532,13 +532,13 @@ extractTitleFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractAbstractFromPmcidEfetchDoc(doc)
+#' ExtractAbstractFromPmcidEfetchDoc(doc)
 #'
-extractAbstractFromPmcidEfetchDoc <- function(article){
+ExtractAbstractFromPmcidEfetchDoc <- function(article){
   return(paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//abstract"))), collapse = " "))
 }
 
-#' extractFullTextFromPmcidEfetchDoc
+#' ExtractFullTextFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -547,13 +547,39 @@ extractAbstractFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractFullTextFromPmcidEfetchDoc(doc)
+#' ExtractFullTextFromPmcidEfetchDoc(doc)
 #'
-extractFullTextFromPmcidEfetchDoc <- function(article){
-  return(paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//body"))), collapse = " "))
+ExtractFullTextFromPmcidEfetchDoc <- function(article){
+  nodes <- xml2::xml_find_all(article, "//ref-list")
+  xml2::xml_remove(nodes)
+  
+  body <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//body"))), collapse = " ")
+  back <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//back"))), collapse = " ")
+  
+  return(paste(body, back, sep=" "))
 }
 
-#' extractStudyTypeFromPmcidEfetchDoc
+#' ExtractFullTextToFile
+#'
+#' @param xmlFilePathFull xml file full path 
+#' @param overwirte whether or not overwrite the text file if already exists
+#'
+#' @return textfilename, a string
+#' @export
+#'
+ExtractFullTextToFile <- function(xmlFilePathFull, overwirte = F){
+  textfilename <- gsub(".nxml", ".txt", xmlFilePathFull, fixed = T)
+  if(file.exists(textfilename) & overwirte == F)  return(textfilename)
+  
+  article <- xml2::read_xml(xmlFilePathFull)
+  fullText <- ExtractFullTextFromPmcidEfetchDoc(article)
+  if(is.na(fullText)) return(NA)
+
+  stringi::stri_write_lines(fullText, textfilename)
+  return(textfilename)
+}
+
+#' ExtractStudyTypeFromPmcidEfetchDoc
 #'
 #' @param article a XMLInternalDocument, a XMLAbstractDocument
 #'
@@ -562,40 +588,40 @@ extractFullTextFromPmcidEfetchDoc <- function(article){
 #'
 #' @examples
 #' doc <- GetDoc(id="4405051", db="pmc", endpoint="efetch")
-#' extractStudyTypeFromPmcidEfetchDoc(doc)
+#' ExtractStudyTypeFromPmcidEfetchDoc(doc)
 #'
-extractStudyTypeFromPmcidEfetchDoc <- function(article){
+ExtractStudyTypeFromPmcidEfetchDoc <- function(article){
   return(paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article ,"//article-categories//subj-group//subject"))), collapse = "; "))
 }
 
 #' ReadMetaDataFromPMCnxml
 #'
-#' @param link a XMLInternalDocument, a XMLAbstractDocument
+#' @param xmlFilePathFull a xml file path
 #' @param columns list of output columns
 #'
 #' @return a 1x3 data frame. With three columns: pmcid, pmid, doi
 #' @export
 #' @import xml2
 #' 
-ReadMetaDataFromPMCnxml <- function(link, columns = c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")) {
-  doc <- xml2::read_xml(link)
+ReadMetaDataFromPMCnxml <- function(xmlFilePathFull, columns = c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")) {
+  doc <- xml2::read_xml(xmlFilePathFull)
   nodeset <- (xml2::as_list(xml2::xml_find_all(doc, "//article")))[[1]]
   nodeset <- nodeset[which(names(nodeset) != "")]
   article <- xml2::as_xml_document(list(nodeset))
     
-    if("pmid" %in% columns) pmid <- extractPmidFromPmcidEfetchDoc(article) else pmid <- NA
-  if("title" %in% columns) title <- extractTitleFromPmcidEfetchDoc(article) else title <- NA
-  if("abstract" %in% columns) abstract <- extractAbstractFromPmcidEfetchDoc(article) else abstract <- NA
-  if("fulltext" %in% columns) fulltext <- extractFullTextFromPmcidEfetchDoc(article) else fulltext <- NA
-  if("studytype" %in% columns) studytype <- extractStudyTypeFromPmcidEfetchDoc(article) else studytype <- NA
-  if("journal" %in% columns)  journal <- extractJournalFromPmcidEfetchDoc(article) else journal <- NA
-  if("publisher" %in% columns)  publisher <-extractPublisherFromPmcidEfetchDoc(article) else publisher <- NA
-  if("publicationDate" %in% columns)  publicationDate <- extractEpubDateFromPmcidEfetchDoc(article) else publicationDate <- NA
-  if("authors" %in% columns)  authors <- extractAuthorsFromPmcidEfetchDoc(article) else authors <- NA
-  if("emails" %in% columns)   emails <- extractEmailsFromPmcidEfetchDoc(article) else emails <- NA
-  if("affiliations" %in% columns)   affiliations <- extractAffliationFromPmcidEfetchDoc(article) else affiliations <- NA
-  if("correspondingAuthors" %in% columns)   correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article) else correspondingAuthors <- NA
-  if("correspondingAuthorAffs" %in% columns)   correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article) else correspondingAuthorAffs <- NA
+    if("pmid" %in% columns) pmid <- ExtractPmidFromPmcidEfetchDoc(article) else pmid <- NA
+  if("title" %in% columns) title <- ExtractTitleFromPmcidEfetchDoc(article) else title <- NA
+  if("abstract" %in% columns) abstract <- ExtractAbstractFromPmcidEfetchDoc(article) else abstract <- NA
+  if("fulltext" %in% columns) fulltext <- ExtractFullTextFromPmcidEfetchDoc(article) else fulltext <- NA
+  if("studytype" %in% columns) studytype <- ExtractStudyTypeFromPmcidEfetchDoc(article) else studytype <- NA
+  if("journal" %in% columns)  journal <- ExtractJournalFromPmcidEfetchDoc(article) else journal <- NA
+  if("publisher" %in% columns)  publisher <-ExtractPublisherFromPmcidEfetchDoc(article) else publisher <- NA
+  if("publicationDate" %in% columns)  publicationDate <- ExtractEpubDateFromPmcidEfetchDoc(article) else publicationDate <- NA
+  if("authors" %in% columns)  authors <- ExtractAuthorsFromPmcidEfetchDoc(article) else authors <- NA
+  if("emails" %in% columns)   emails <- ExtractEmailsFromPmcidEfetchDoc(article) else emails <- NA
+  if("affiliations" %in% columns)   affiliations <- ExtractAffliationFromPmcidEfetchDoc(article) else affiliations <- NA
+  if("correspondingAuthors" %in% columns)   correspondingAuthors <- ExtractCorrespondingAuthorFromPmcidEfetchDoc(article) else correspondingAuthors <- NA
+  if("correspondingAuthorAffs" %in% columns)   correspondingAuthorAffs <- ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article) else correspondingAuthorAffs <- NA
     
     results <- cbind(
       pmid,
@@ -645,21 +671,23 @@ ReadMetaDataFromPmcidEfetchDoc <- function(doc, columns = c("pmid", "title", "ab
   nodesetList <- xml2::as_list(xml2::xml_find_all(doc, "//article"))
 
   results <- as.data.frame(t(sapply(nodesetList, function(x) {
-    article <- xml2::as_xml_document(list(x[c("front" ,"body",  "back")]))
+    x <- x[which(names(x) != "")]
+    
+    article <- xml2::as_xml_document(list(x))
 
-    pmid <- extractPmidFromPmcidEfetchDoc(article)
-    title <- extractTitleFromPmcidEfetchDoc(article)
-    abstract <- extractAbstractFromPmcidEfetchDoc(article)
-    fulltext <- extractFullTextFromPmcidEfetchDoc(article)
-    studytype <- extractStudyTypeFromPmcidEfetchDoc(article)
-    journal <- extractJournalFromPmcidEfetchDoc(article)
-    publisher <-extractPublisherFromPmcidEfetchDoc(article)
-    publicationDate <- extractEpubDateFromPmcidEfetchDoc(article)
-    authors <- extractAuthorsFromPmcidEfetchDoc(article)
-    emails <- extractEmailsFromPmcidEfetchDoc(article)
-    affiliations <- extractAffliationFromPmcidEfetchDoc(article)
-    correspondingAuthors <- extractCorrespondingAuthorFromPmcidEfetchDoc(article)
-    correspondingAuthorAffs <- extractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article)
+    if("pmid" %in% columns) pmid <- ExtractPmidFromPmcidEfetchDoc(article) else pmid <- NA
+    if("title" %in% columns) title <- ExtractTitleFromPmcidEfetchDoc(article) else title <- NA
+    if("abstract" %in% columns) abstract <- ExtractAbstractFromPmcidEfetchDoc(article) else abstract <- NA
+    if("fulltext" %in% columns) fulltext <- ExtractFullTextFromPmcidEfetchDoc(article) else fulltext <- NA
+    if("studytype" %in% columns) studytype <- ExtractStudyTypeFromPmcidEfetchDoc(article) else studytype <- NA
+    if("journal" %in% columns)  journal <- ExtractJournalFromPmcidEfetchDoc(article) else journal <- NA
+    if("publisher" %in% columns)  publisher <-ExtractPublisherFromPmcidEfetchDoc(article) else publisher <- NA
+    if("publicationDate" %in% columns)  publicationDate <- ExtractEpubDateFromPmcidEfetchDoc(article) else publicationDate <- NA
+    if("authors" %in% columns)  authors <- ExtractAuthorsFromPmcidEfetchDoc(article) else authors <- NA
+    if("emails" %in% columns)   emails <- ExtractEmailsFromPmcidEfetchDoc(article) else emails <- NA
+    if("affiliations" %in% columns)   affiliations <- ExtractAffliationFromPmcidEfetchDoc(article) else affiliations <- NA
+    if("correspondingAuthors" %in% columns)   correspondingAuthors <- ExtractCorrespondingAuthorFromPmcidEfetchDoc(article) else correspondingAuthors <- NA
+    if("correspondingAuthorAffs" %in% columns)   correspondingAuthorAffs <- ExtractCorrespondindAuthorAffliationFromPmcidEfetchDoc(article) else correspondingAuthorAffs <- NA
 
     return(cbind(
       pmid,
