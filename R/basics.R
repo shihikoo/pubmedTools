@@ -256,17 +256,17 @@ GetDoc <-
 #' @return the values of the node
 #' @export
 #' @examples  
-#' doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="esummary")
-#' RetriveXmlNodeValuefromDoc(doc, "//Id")
+#' doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="efetch")
+#' RetriveXmlNodeValuefromDoc(doc, "//permissions")
 #'
 #' @import xml2
 #'
 RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
   nodes <- xml2::xml_find_all(doc, nodePosition)
   if (length(nodes) == 0) return(NA)
-  results <- gsub("\t"," ",gsub("\n","",sapply(nodes, xml2::xml_text), fixed = T), fixed = T)
+  results <- gsub("\t"," ",gsub("\n"," ", sapply(nodes, function(x) {paste(xml2::xml_text(xml2::xml_children(x)), collapse = " ")}) , fixed = T), fixed = T)
   results[which(results == "NA")] <- NA
-
+  
   return(results)
 }
 
