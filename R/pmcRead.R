@@ -553,8 +553,8 @@ ExtractFullTextFromPmcidEfetchDoc <- function(article){
   nodes <- xml2::xml_find_all(article, "//ref-list")
   xml2::xml_remove(nodes)
   
-  body <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//body"))), collapse = " ")
-  back <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//back"))), collapse = " ")
+  body <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//body", onlyChildren = T))), collapse = " ")
+  back <- paste0(stats::na.omit(unique(RetriveXmlNodeValuefromDoc(article, "//back", onlyChildren = T))), collapse = " ")
   
   return(paste(body, back, sep=" "))
 }

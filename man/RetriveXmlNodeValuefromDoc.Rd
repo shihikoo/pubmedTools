@@ -4,12 +4,14 @@
 \alias{RetriveXmlNodeValuefromDoc}
 \title{RetriveXmlNodeValuefromDoc}
 \usage{
-RetriveXmlNodeValuefromDoc(doc, nodePosition)
+RetriveXmlNodeValuefromDoc(doc, nodePosition, onlyChildren = FALSE)
 }
 \arguments{
 \item{doc}{the parsed XML file}
 
 \item{nodePosition}{the node position of the xml file}
+
+\item{onlyChildren}{whether only use Children of the nodes}
 }
 \value{
 the values of the node
@@ -19,7 +21,7 @@ RetriveXmlNodeValuefromDoc
 }
 \examples{
  
-doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="esummary")
-RetriveXmlNodeValuefromDoc(doc, "//Id")
+doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="efetch")
+RetriveXmlNodeValuefromDoc(doc, "//permissions", onlyChildren = T)
 
 }

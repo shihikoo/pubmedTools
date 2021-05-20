@@ -252,19 +252,21 @@ GetDoc <-
 #'
 #' @param doc the parsed XML file
 #' @param nodePosition the node position of the xml file
+#' @param onlyChildren whether only use Children of the nodes
 #'
 #' @return the values of the node
 #' @export
 #' @examples  
 #' doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="efetch")
-#' RetriveXmlNodeValuefromDoc(doc, "//permissions")
+#' RetriveXmlNodeValuefromDoc(doc, "//permissions", onlyChildren = T)
 #'
 #' @import xml2
 #'
-RetriveXmlNodeValuefromDoc <- function(doc, nodePosition) {
+RetriveXmlNodeValuefromDoc <- function(doc, nodePosition, onlyChildren = FALSE) {
   nodes <- xml2::xml_find_all(doc, nodePosition)
   if (length(nodes) == 0) return(NA)
-  results <- gsub("\t"," ",gsub("\n"," ", sapply(nodes, function(x) {paste(xml2::xml_text(xml2::xml_children(x)), collapse = " ")}) , fixed = T), fixed = T)
+  if(onlyChildren) results <- gsub("\t"," ",gsub("\n"," ", sapply(nodes, function(x) {paste(xml2::xml_text(xml2::xml_children(x)), collapse = " ")}) , fixed = T), fixed = T) else  results <- gsub("\t"," ",gsub("\n"," ", sapply(nodes, function(x) {paste(xml2::xml_text(x), collapse = " ")}) , fixed = T), fixed = T)
+  
   results[which(results == "NA")] <- NA
   
   return(results)

@@ -352,7 +352,7 @@ RetriveBookTitleFromPubmedEfetch <- function(doc){
 #' @import xml2
 #'
 RetriveAbstractFromPubmedEfetch <- function(doc){
-  return(RetriveXmlNodeValuefromDoc(doc,  "//Abstract"))
+  return(paste(RetriveXmlNodeValuefromDoc(doc,  "//AbstractText"), collapse = " "))
 }
 
 #' RetriveDOIFromPubmedEfetch
@@ -785,7 +785,7 @@ RetriveMetaDataFromSearch <-
         utils::write.csv(result, file = csvoutputFilename)
         print(paste0("Save file ", csvoutputFilename))
       }
-
+  
       print(paste("To retrieve publications: ", min(iindex), "-", max(iindex)))
       print(paste("Retrieved publications: ", nrow(result)))
 
