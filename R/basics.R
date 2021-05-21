@@ -258,7 +258,7 @@ GetDoc <-
 #' @export
 #' @examples  
 #' doc <- GetDoc(id = c("5575286", "4804230"),db= "pmc", endpoint="efetch")
-#' RetriveXmlNodeValuefromDoc(doc, "//permissions", onlyChildren = T)
+#' RetriveXmlNodeValuefromDoc(doc, "//permissions")
 #'
 #' @import xml2
 #'
