@@ -16,7 +16,7 @@ RetriveMetaDataFromPmidsBatch(
 
 \item{outputFileBaseName}{a string of characters. The base name of output xml files. If default, there will be no xml saved.}
 
-\item{columns}{the columns of output requested}
+\item{columns}{a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"}
 
 \item{grid}{the number of ids to run in each loop}
 }

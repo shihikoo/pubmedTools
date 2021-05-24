@@ -580,7 +580,7 @@ RetrivePmcidWithPmids <-
 #---------- Multiple parsers with pubmed efetch xml as input ----
 #' RetriveMetaDataFromPubmedEfetch
 #' @param doc an XMLInternalDocument class file read from a pubmed efetch xml file
-#' @param columns a list of string of requested column names
+#' @param columns a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"
 #'
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
@@ -666,8 +666,8 @@ RetriveMetaDataFromPubmedEfetch <-
 #'
 #' @description Good for used in local multiple xmls
 #' @param files a list of string. A list of xml filenames
-#' @param columns the columns of output requested
-
+#' @param columns a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"
+#' 
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
@@ -693,8 +693,8 @@ RetriveMetaDataFromPubmedEfetchParallel <- function(files, columns = "") {
 #'
 #' @param pmid a string of character. PubMed Id
 #' @param outputFilename a string of characters. Output XML file name
-#' @param columns the columns of output requested
-
+#' @param columns a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"
+#' 
 #' @return a list of metaDatarmation retrived from PubMed
 #' @export
 #'
@@ -723,7 +723,7 @@ RetriveMetaDataFromPmids <-
 #' RetriveMetaDataFromSearch
 #'
 #' @param searchTerm a string of character. search term
-#' @param columns the columns of output requested
+#' @param columns a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"
 #' @param outputFilename a string of characters. Output XML file name
 #'
 #' @return a list of metaDatarmation retrived from PubMed
@@ -801,7 +801,7 @@ RetriveMetaDataFromSearch <-
 #' @description this function is good for retrive data directly
 #' @param pmids a string of character. PubMed central Id
 #' @param outputFileBaseName a string of characters. The base name of output xml files. If default, there will be no xml saved.
-#' @param columns the columns of output requested
+#' @param columns a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"
 #' @param grid the number of ids to run in each loop
 #'
 #' @return a nx7 data frame. With three columns: pmcid, pmid, doi

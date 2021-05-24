@@ -9,7 +9,7 @@ RetriveMetaDataFromSearch(searchTerm, columns = "", outputFilename = "")
 \arguments{
 \item{searchTerm}{a string of character. search term}
 
-\item{columns}{the columns of output requested}
+\item{columns}{a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"}
 
 \item{outputFilename}{a string of characters. Output XML file name}
 }

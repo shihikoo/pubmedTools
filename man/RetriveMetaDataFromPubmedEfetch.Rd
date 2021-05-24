@@ -9,7 +9,7 @@ RetriveMetaDataFromPubmedEfetch(doc, columns = "")
 \arguments{
 \item{doc}{an XMLInternalDocument class file read from a pubmed efetch xml file}
 
-\item{columns}{a list of string of requested column names}
+\item{columns}{a list of string of requested column names: "pmid","pmcid", "journal", "journalCountry","publicationYear","funders","authors","affiliations","title","abstract","isbn","volume","issue","pages", "keywords","doi"}
 }
 \value{
 a list of metaDatarmation retrived from PubMed
