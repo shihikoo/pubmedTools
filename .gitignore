@@ -5,3 +5,5 @@ inst/doc
 .Rhistory
 .RData
 *.xml
+packrat/src/
+packrat/

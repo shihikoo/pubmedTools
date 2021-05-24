@@ -606,23 +606,25 @@ RetriveMetaDataFromPubmedEfetch <-
       # y <- xml2::xml_find_first(xml2::as_xml_document(x), "//MedlineCitation")
       article <- xml2::as_xml_document(list(x))
 
-      pmid <- RetrivePMIDFromPubmedEfetch(article)
-      pmcid <- RetrivePMCIDFromPubmedEfetch(article)
-      journal <- RetriveJournalFromPubmedEfetch(article)
-      journalCountry <- RetriveJournalCountryFromPubmedEfetch(article)
-      publicationYear <- RetrivePublicationYearFromPubmedEfetch(article)
-      funders <- RetriveFundersFromPubmedEfetch(article)
-      authors <- RetriveAuthorsFromPubmedEfetch(article)
-      affiliations <- RetriveAffiliationFromPubmedEfetch(article)
-      title <- RetriveTitleFromPubmedEfetch(article)
+      if("pmid" %in% columns) pmid <- RetrivePMIDFromPubmedEfetch(article) else pmid <- ""
+      if("pmcid" %in% columns) pmcid <- RetrivePMCIDFromPubmedEfetch(article) else pmcid <- ""
+      if("journal" %in% columns) journal <- RetriveJournalFromPubmedEfetch(article) else journal <- "" 
+      if("journalCountry" %in% columns) journalCountry <- RetriveJournalCountryFromPubmedEfetch(article) else journalCountry <- ""
+      if("publicationYear" %in% columns) publicationYear <- RetrivePublicationYearFromPubmedEfetch(article) else publicationYear <- ""
+      if("funders" %in% columns) funders <- RetriveFundersFromPubmedEfetch(article) else funders <- "" 
+      if("authors" %in% columns) authors <- RetriveAuthorsFromPubmedEfetch(article) else authors <- ""
+      if("affiliations" %in% columns) affiliations <- RetriveAffiliationFromPubmedEfetch(article) else affiliations <- ""
+      if("title" %in% columns) {
+        title <- RetriveTitleFromPubmedEfetch(article)
       if(is.na(title)) title <- RetriveBookTitleFromPubmedEfetch(article)
-      abstract <- RetriveAbstractFromPubmedEfetch(article)
-      isbn <- RetriveIBSNFromPubmedEfetch(article)
-      volume <- RetriveVolumeFromPubmedEfetch(article)
-      issue <- RetriveIssueFromPubmedEfetch(article)
-      pages <- RetrivePagesFromPubmedEfetch(article)
-      keywords <- paste(RetriveKeywordsFromPubmedEfetch(article),collapse = "; ")
-      doi <- RetriveDOIFromPubmedEfetch(article)
+      } else title <- ""
+      if("abstract" %in% columns) abstract <- RetriveAbstractFromPubmedEfetch(article) else abstract <- ""
+      if("isbn" %in% columns) isbn <- RetriveIBSNFromPubmedEfetch(article) else isbn <- ""
+      if("volume" %in% columns) volume <- RetriveVolumeFromPubmedEfetch(article) else volume <- ""
+      if("issue" %in% columns) issue <- RetriveIssueFromPubmedEfetch(article) else issue <- ""
+      if("pages" %in% columns) pages <- RetrivePagesFromPubmedEfetch(article) else pages <- ""
+      if("keywords" %in% columns) keywords <- paste(RetriveKeywordsFromPubmedEfetch(article),collapse = "; ") else keywords <- ""
+      if("doi" %in% columns) doi <- RetriveDOIFromPubmedEfetch(article) else doi <- ""
 
       return(cbind(
         pmid,
@@ -646,19 +648,9 @@ RetriveMetaDataFromPubmedEfetch <-
 
     result <- as.data.frame(t(resultList), stringsAsFactors = F)
     # print(dim(result))
-    names(result) <- c("pmid","pmcid", "journal",
-                       "journalCountry",
-                       "publicationYear",
-                       "funders",
-                       "authors",
-                       "affiliations",
-                       "title",
-                       "abstract","isbn",
-                       "volume",
-                       "issue",
-                       "pages", "keywords","doi")
+    names(result) <-  c("pmid","pmcid", "journal", "journalCountry","publicationYear", "funders", "authors","affiliations","title","abstract","isbn","volume","issue", "pages", "keywords","doi")
     if(length(columns) == 1 && all(columns == "")) columns <- names(result)
-
+  
     return(result[, intersect(names(result), columns)])
   }
 
