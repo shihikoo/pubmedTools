@@ -609,7 +609,7 @@ ReadMetaDataFromPMCnxml <- function(xmlFilePathFull, columns = c("pmid", "title"
   nodeset <- nodeset[which(names(nodeset) != "")]
   article <- xml2::as_xml_document(list(nodeset))
     
-    if("pmid" %in% columns) pmid <- ExtractPmidFromPmcidEfetchDoc(article) else pmid <- NA
+  if("pmid" %in% columns) pmid <- ExtractPmidFromPmcidEfetchDoc(article) else pmid <- NA
   if("title" %in% columns) title <- ExtractTitleFromPmcidEfetchDoc(article) else title <- NA
   if("abstract" %in% columns) abstract <- ExtractAbstractFromPmcidEfetchDoc(article) else abstract <- NA
   if("fulltext" %in% columns) fulltext <- ExtractFullTextFromPmcidEfetchDoc(article) else fulltext <- NA

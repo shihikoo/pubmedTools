@@ -598,7 +598,7 @@ RetrivePmcidWithPmids <-
 #' @import xml2
 #'
 RetriveMetaDataFromPubmedEfetch <-
-  function(doc, columns = "") {
+  function(doc, columns = c("pmid", "title", "abstract","fulltext","studytype", "journal", "publisher", "publicationDate","authors", "emails","affiliations", "correspondingAuthors","correspondingAuthorAffs")) {
     nodesetList1 <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedArticle"))
     nodesetList2 <- xml2::as_list(xml2::xml_find_all(doc, "//PubmedBookArticle"))
     nodesetList <- c(nodesetList1, nodesetList2)
@@ -650,7 +650,7 @@ RetriveMetaDataFromPubmedEfetch <-
     # print(dim(result))
     names(result) <-  c("pmid","pmcid", "journal", "journalCountry","publicationYear", "funders", "authors","affiliations","title","abstract","isbn","volume","issue", "pages", "keywords","doi")
     if(length(columns) == 1 && all(columns == "")) columns <- names(result)
-  
+    
     return(result[, intersect(names(result), columns)])
   }
 
